@@ -1,4 +1,4 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+import { createClient } from './supabase.js'
 
 // Supabase keys
 const SUPABASE_URL = 'https://ssszglrcmlxaiwotvlsc.supabase.co'
@@ -46,3 +46,4 @@ loginForm.addEventListener('submit', async e => {
     window.location.href = 'dashboard.html'  // <-- redirect to dashboard after login
   }
 })
+
