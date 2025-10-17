@@ -5,22 +5,24 @@
   <title>GHS Underground - Dashboard</title>
   <link rel="stylesheet" href="style.css">
   <style>
+    /* Chatroom styling */
     .chat-container {
       border: 1px solid #ccc;
       height: 300px;
       overflow-y: auto;
       padding: 10px;
-      background: #f8f8f8;
+      background: #d1ffd6; /* light green */
       margin-bottom: 10px;
     }
     .chat-message {
       margin-bottom: 5px;
       padding: 3px 6px;
       border-radius: 5px;
+      color: #000; /* black text for readability */
     }
     .chat-message.current-user {
-      background: #d1ffd6;
       text-align: right;
+      font-weight: bold;
     }
     .chat-message .user {
       font-weight: bold;
@@ -76,7 +78,7 @@
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) window.location.href = 'index.html'
 
-    // --- Get full name from users table (fallback to email) ---
+    // --- Fetch full name, fallback to email ---
     let fullName = user.email
     try {
       const { data: userData, error: userError } = await supabase
@@ -114,7 +116,6 @@
       chatContainer.scrollTop = chatContainer.scrollHeight
     }
 
-    // --- Load existing messages ---
     async function loadMessages() {
       const { data, error } = await supabase
         .from('messages')
@@ -125,7 +126,7 @@
     }
     loadMessages()
 
-    // --- Real-time subscription (v2 API) ---
+    // --- Real-time subscription ---
     const chatChannel = supabase
       .channel('public:messages')
       .on(
@@ -135,7 +136,7 @@
       )
       .subscribe()
 
-    // --- Send new messages ---
+    // --- Send new message ---
     chatForm.addEventListener('submit', async e => {
       e.preventDefault()
       const content = chatInput.value.trim()
@@ -146,7 +147,7 @@
           user_id: user.id,
           full_name: fullName,
           content
-        }], { returning: 'representation' }) // ensure data is returned
+        }], { returning: 'representation' })
 
       if (error) {
         console.error("Insert failed:", error)
@@ -154,7 +155,7 @@
       } else {
         console.log("Message sent successfully:", data)
         chatInput.value = ''
-        if (data && data[0]) renderMessage(data[0]) // render immediately
+        if (data && data[0]) renderMessage(data[0])
       }
     })
   </script>
