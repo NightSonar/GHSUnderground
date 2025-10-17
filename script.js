@@ -32,10 +32,16 @@ signupForm.addEventListener('submit', async e => {
     return
   }
 
+  const userId = authData.user?.id
+  if (!userId) {
+    alert('Sign-up partially succeeded. Could not get user ID for profile.')
+    return
+  }
+
   // --- Add to profiles table ---
   const { data: profileData, error: profileError } = await supabase
     .from('profiles')
-    .insert([{ user_id: authData.user.id, full_name: fullName, email }])
+    .insert([{ id: userId, full_name: fullName, email }])
 
   if (profileError) {
     console.error('Error saving profile:', profileError)
