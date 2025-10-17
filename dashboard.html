@@ -77,11 +77,13 @@
     if (!user) window.location.href = 'index.html'
 
     // Get full name from users table
-    const { data: userData } = await supabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('full_name')
       .eq('id', user.id)
       .single()
+
+    if (userError) console.error("Error fetching user full_name:", userError)
 
     const welcomeMsg = document.getElementById('welcome-message')
     welcomeMsg.textContent = `Welcome, ${userData?.full_name || user.email}!`
@@ -109,11 +111,15 @@
     }
 
     async function loadMessages() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('messages')
         .select('*')
         .order('created_at', { ascending: true })
-      if (data) data.forEach(renderMessage)
+      if (error) {
+        console.error("Error loading messages:", error)
+      } else {
+        data.forEach(renderMessage)
+      }
     }
 
     loadMessages()
@@ -124,19 +130,25 @@
       .on('INSERT', payload => renderMessage(payload.new))
       .subscribe()
 
-    // Send new message
+    // Send new message with debug logging
     chatForm.addEventListener('submit', async e => {
       e.preventDefault()
       const content = chatInput.value.trim()
       if (!content) return
 
-      const { error } = await supabase.from('messages').insert([{
+      const { data, error } = await supabase.from('messages').insert([{
         user_id: user.id,
         full_name: userData?.full_name || user.email,
         content
       }])
 
-      if (!error) chatInput.value = ''
+      if (error) {
+        console.error("Insert failed:", error)
+        alert("Message failed to send. Check console for details.")
+      } else {
+        console.log("Message sent successfully:", data)
+        chatInput.value = ''
+      }
     })
   </script>
 </body>
