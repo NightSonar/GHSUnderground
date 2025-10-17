@@ -1,146 +1,38 @@
-/* --- Global --- */
 body {
   margin: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f0f5f2; /* light subtle background */
+  background: #f0f5f2;
   color: #222;
 }
 
-header {
-  background: #0d3b2d;
-  color: #fff;
-  padding: 20px;
+h1, h2 {
   text-align: center;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
 }
 
-header h1 {
-  margin: 0;
-  font-size: 2em;
-}
-
-header .tagline p {
-  margin: 5px 0;
-  font-size: 0.9em;
-  font-weight: 300;
-}
-
-header .founder {
-  font-style: italic;
-  font-weight: bold;
-  margin-top: 10px;
-}
-
-/* --- Main --- */
-main {
-  max-width: 900px;
-  margin: 20px auto;
-  padding: 0 15px;
-}
-
-section.dashboard {
+form {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-section.dashboard h2 {
-  margin: 0;
-}
-
-section.dashboard button {
-  padding: 8px 16px;
-  background: #0d3b2d;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-section.dashboard button:hover {
-  background: #11563c;
-}
-
-/* --- Chatroom --- */
-.chatroom h3 {
-  margin-bottom: 10px;
-}
-
-.chat-container {
-  border: 1px solid #ccc;
-  height: 350px;
-  overflow-y: auto;
-  padding: 10px;
-  background: #e4f5e9; /* pale green */
-  border-radius: 8px;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-  margin-bottom: 10px;
-}
-
-.chat-message {
-  margin-bottom: 8px;
-  padding: 6px 10px;
-  border-radius: 12px;
-  max-width: 75%;
-  color: #000 !important; /* enforce black text */
-  background: #fff;
-  box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
-  word-wrap: break-word;
-}
-
-.chat-message.current-user {
-  background: #d1ffd6;
-  text-align: right;
-  margin-left: auto;
-  font-weight: bold;
-}
-
-.chat-message .user {
-  font-weight: bold;
-}
-
-.chat-message .time {
-  font-size: 0.75em;
-  color: #555;
-  margin-left: 5px;
-}
-
-/* --- Chat form --- */
-#chat-form {
-  display: flex;
+  flex-direction: column;
+  max-width: 400px;
+  margin: 10px auto;
   gap: 10px;
 }
 
-#chat-input {
-  flex: 1;
+input, button {
   padding: 8px 12px;
   border-radius: 6px;
   border: 1px solid #ccc;
 }
 
-#chat-form button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
+button {
   background: #0d3b2d;
   color: #fff;
+  border: none;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s;
 }
 
-#chat-form button:hover {
+button:hover {
   background: #11563c;
 }
 
-/* --- Footer --- */
-footer {
-  text-align: center;
-  padding: 15px;
-  background: #0d3b2d;
-  color: #fff;
-  margin-top: 30px;
-  font-size: 0.9em;
-  box-shadow: 0 -4px 6px rgba(0,0,0,0.2);
-}
+/* Chatroom styling is in dashboard */
