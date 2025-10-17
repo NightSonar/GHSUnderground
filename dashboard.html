@@ -41,7 +41,7 @@
     import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
     const SUPABASE_URL = 'https://ssszglrcmlxaiwotvlsc.supabase.co'
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzc3pnbHJjbWx4YWl3b3R2bHNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjU4NDMsImV4cCI6MjA3NjAwMTg0M30.zwWxnFEtvwWNLcNEYHRwJpTUCnrJ8bkZniOwUHJBRYQ'
+    const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY_HERE'
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
@@ -49,13 +49,13 @@
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) window.location.href = 'index.html'
 
-    // --- Fetch full name from profiles ---
+    // --- Fetch full name ---
     let fullName = user.email
     try {
       const { data: profileData } = await supabase
         .from('profiles')
         .select('full_name')
-        .eq('id', user.id)      // <-- changed from user_id to id
+        .eq('id', user.id)
         .single()
       if (profileData?.full_name) fullName = profileData.full_name
     } catch (err) {
@@ -78,10 +78,10 @@
     function renderMessage(msg) {
       const div = document.createElement('div')
       div.classList.add('chat-message')
-      if (msg.id === user.id) div.classList.add('current-user') // <-- use id if needed
+      if (msg.id === user.id) div.classList.add('current-user')
 
       const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      div.innerHTML = `<span class="user">${msg.full_name || msg.id}:</span> ${msg.content} <span class="time">${time}</span>` // full_name used
+      div.innerHTML = `<span class="user">${msg.full_name || msg.id}:</span> ${msg.content} <span class="time">${time}</span>`
       chatContainer.appendChild(div)
       chatContainer.scrollTop = chatContainer.scrollHeight
     }
@@ -105,7 +105,7 @@
       e.preventDefault()
       const content = chatInput.value.trim()
       if (!content) return
-      const { data, error } = await supabase.from('messages').insert([{ id: user.id, full_name: fullName, content }]) // <-- uses full_name
+      const { data, error } = await supabase.from('messages').insert([{ id: user.id, full_name: fullName, content }])
       if (error) console.error("Insert failed:", error)
       chatInput.value = ''
     })
