@@ -1,12 +1,11 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
-// Supabase keys
 const SUPABASE_URL = 'https://ssszglrcmlxaiwotvlsc.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzc3pnbHJjbWx4YWl3b3R2bHNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjU4NDMsImV4cCI6MjA3NjAwMTg0M30.zwWxnFEtvwWNLcNEYHRwJpTUCnrJ8bkZniOwUHJBRYQ'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-// Allow only emails starting with 'gw' and ending with '@glow.sch.uk'
+// Email validation
 function allowedEmail(email) {
   return /^gw.*@glow\.sch\.uk$/i.test(email)
 }
@@ -24,16 +23,16 @@ signupForm.addEventListener('submit', async e => {
     return
   }
 
-  // Sign up user in Supabase auth
+  // Sign up user
   const { data, error } = await supabase.auth.signUp({ email, password })
   if (error) {
     alert('Sign up error: ' + error.message)
   } else {
-    // Insert into profiles table
+    // Insert into profiles immediately
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .insert([{
-        id: data.user.id,   // <- important: must match auth user id
+        id: data.user.id,
         full_name: fullName,
         email: email
       }])
