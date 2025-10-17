@@ -50,17 +50,22 @@
     if (!user) window.location.href = 'index.html'
 
     // --- Fetch full name from profiles ---
-    let fullName = user.email
+    let fullName = null
     try {
-      const { data: profileData } = await supabase
+      const { data: profileData, error } = await supabase
         .from('profiles')
         .select('full_name')
-        .eq('id', user.id)
+        .eq('user_id', user.id)
         .single()
+
+      if (error) console.warn("Error fetching profile:", error)
       if (profileData?.full_name) fullName = profileData.full_name
     } catch (err) {
-      console.warn("Using email as fallback:", err)
+      console.warn("Could not fetch full_name:", err)
     }
+
+    // fallback to email if no full name
+    if (!fullName) fullName = user.email
 
     document.getElementById('welcome-message').textContent = `Welcome, ${fullName}!`
 
@@ -81,7 +86,7 @@
       if (msg.user_id === user.id) div.classList.add('current-user')
 
       const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      div.innerHTML = `<span class="user">${msg.full_name}:</span> ${msg.content} <span class="time">${time}</span>`
+      div.innerHTML = `<span class="user">${msg.full_name || msg.user_id}:</span> ${msg.content} <span class="time">${time}</span>`
       chatContainer.appendChild(div)
       chatContainer.scrollTop = chatContainer.scrollHeight
     }
@@ -106,15 +111,14 @@
       const content = chatInput.value.trim()
       if (!content) return
 
+      // insert message with proper full_name from profiles
       const { data, error } = await supabase.from('messages').insert([{
-        user_id: user.id,     // must match type uuid/text
-        full_name: fullName,  // display name
+        user_id: user.id,   // UUID type
+        full_name: fullName,
         content
       }])
 
       if (error) console.error("Insert failed:", error)
-      else console.log("Message sent successfully:", data)
-
       chatInput.value = ''
     })
   </script>
