@@ -1,20 +1,83 @@
+/* Basic Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
+}
+
+/* Body Background & Text */
 body {
-  font-family: Arial, sans-serif;
+  background-color: #121212;
+  color: #f0f0f0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+}
+
+/* Header */
+header {
   text-align: center;
-  padding: 50px;
+  margin-bottom: 40px;
+}
+
+header h1 {
+  font-size: 3rem;
+  color: #ffcc00;
+  text-shadow: 1px 1px 3px #000;
+}
+
+header .tagline {
+  font-size: 1.2rem;
+  color: #ccc;
+  margin-top: 5px;
+}
+
+/* Forms */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
 }
 
 input {
-  margin: 5px;
   padding: 10px;
+  border: none;
+  border-radius: 5px;
 }
 
 button {
-  padding: 10px 20px;
-  margin-top: 10px;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #ffcc00;
+  color: #121212;
+  font-weight: bold;
   cursor: pointer;
+  transition: 0.2s;
 }
 
-section {
-  margin-bottom: 40px;
+button:hover {
+  background-color: #e6b800;
+}
+
+/* Sections */
+.form-section {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+/* Footer */
+footer {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #888;
 }
