@@ -149,3 +149,19 @@ footer {
   font-size: 0.9em;
   box-shadow: 0 -4px 6px rgba(0,0,0,0.2);
 }
+
+/* --- Contact The Sparrow section --- */
+.contact-sparrow {
+  margin-top: 20px;
+  padding: 12px;
+  background-color: #fff8c4; /* light yellow background */
+  color: #333;
+  border: 2px solid #f0c000;
+  border-radius: 8px;
+  font-weight: bold;
+  text-align: center;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
