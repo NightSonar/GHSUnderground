@@ -76,17 +76,21 @@
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) window.location.href = 'index.html'
 
-    // Get full name from users table
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('full_name')
-      .eq('id', user.id)
-      .single()
+    // Attempt to fetch full name from custom users table
+    let fullName = user.email
+    try {
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('full_name')
+        .eq('id', user.id)
+        .single()
+      if (userError) console.warn("Could not fetch full_name, using email:", userError)
+      else if (userData?.full_name) fullName = userData.full_name
+    } catch (err) {
+      console.warn("Error fetching full_name, using email:", err)
+    }
 
-    if (userError) console.error("Error fetching user full_name:", userError)
-
-    const welcomeMsg = document.getElementById('welcome-message')
-    welcomeMsg.textContent = `Welcome, ${userData?.full_name || user.email}!`
+    document.getElementById('welcome-message').textContent = `Welcome, ${fullName}!`
 
     // Logout
     document.getElementById('logout-button').addEventListener('click', async () => {
@@ -105,7 +109,7 @@
       if (msg.user_id === user.id) div.classList.add('current-user')
 
       const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      div.innerHTML = `<span class="user">${msg.full_name}:</span> ${msg.content} <span class="time">${time}</span>`
+      div.innerHTML = `<span class="user">${msg.full_name || msg.user_id}:</span> ${msg.content} <span class="time">${time}</span>`
       chatContainer.appendChild(div)
       chatContainer.scrollTop = chatContainer.scrollHeight
     }
@@ -115,19 +119,20 @@
         .from('messages')
         .select('*')
         .order('created_at', { ascending: true })
-      if (error) {
-        console.error("Error loading messages:", error)
-      } else {
-        data.forEach(renderMessage)
-      }
+      if (error) console.error("Error loading messages:", error)
+      else data.forEach(renderMessage)
     }
 
     loadMessages()
 
-    // Subscribe to live inserts
-    supabase
-      .from('messages')
-      .on('INSERT', payload => renderMessage(payload.new))
+    // --- Real-time subscription using v2 API ---
+    const chatChannel = supabase
+      .channel('public:messages')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages' },
+        payload => renderMessage(payload.new)
+      )
       .subscribe()
 
     // Send new message with debug logging
@@ -138,7 +143,7 @@
 
       const { data, error } = await supabase.from('messages').insert([{
         user_id: user.id,
-        full_name: userData?.full_name || user.email,
+        full_name: fullName,
         content
       }])
 
