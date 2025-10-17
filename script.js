@@ -5,12 +5,12 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-// --- Allowed emails ---
+// --- Helper: allowed emails ---
 function allowedEmail(email) {
   return /^gw.*@glow\.sch\.uk$/i.test(email)
 }
 
-// --- Sign Up ---
+// --- SIGNUP ---
 const signupForm = document.querySelector('#signup-form')
 signupForm.addEventListener('submit', async e => {
   e.preventDefault()
@@ -26,18 +26,18 @@ signupForm.addEventListener('submit', async e => {
   if (error) {
     alert('Sign up error: ' + error.message)
   } else {
-    alert('Sign-up successful! Check your email for verification.')
+    // Insert row into custom users table
+    const { error: insertError } = await supabase.from('users').insert([{
+      id: data.user.id,
+      full_name: ''  // empty, will prompt on first login
+    }])
+    if (insertError) console.error('Error creating user row:', insertError)
 
-    // Insert into public.users automatically
-    const userId = data.user.id
-    await supabase.from('users').insert({
-      id: userId,
-      full_name: '' // will ask later if empty
-    })
+    alert('Sign-up successful! Check your email for verification.')
   }
 })
 
-// --- Log In ---
+// --- LOGIN ---
 const loginForm = document.querySelector('#login-form')
 loginForm.addEventListener('submit', async e => {
   e.preventDefault()
@@ -48,6 +48,7 @@ loginForm.addEventListener('submit', async e => {
   if (error) {
     alert('Login error: ' + error.message)
   } else {
+    // Go to dashboard after login
     window.location.href = 'dashboard.html'
   }
 })
