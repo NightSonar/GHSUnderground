@@ -1,4 +1,54 @@
-/* --- Chatroom --- */
+body {
+  font-family: Arial, sans-serif;
+  background: #f0f0f0;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background: #0d3b2d;
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+}
+
+header .tagline p {
+  margin: 5px 0;
+}
+
+header .founder {
+  font-style: italic;
+  margin-top: 10px;
+}
+
+main {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 0 15px;
+}
+
+section.dashboard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #0d3b2d;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+button:hover {
+  background: #11563c;
+}
+
 .chat-container {
   border: 1px solid #ccc;
   height: 350px;
@@ -14,7 +64,7 @@
   padding: 6px 10px;
   border-radius: 12px;
   max-width: 75%;
-  color: #000 !important;
+  color: #000;
   background: #fff;
   word-wrap: break-word;
 }
@@ -46,18 +96,4 @@
   padding: 8px 12px;
   border-radius: 6px;
   border: 1px solid #ccc;
-}
-
-#chat-form button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
-  background: #0d3b2d;
-  color: #fff;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-#chat-form button:hover {
-  background: #11563c;
 }
