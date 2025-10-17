@@ -2,36 +2,68 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard - GHS Underground</title>
+  <title>GHS Underground - Dashboard</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Dashboard</h1>
-  <p id="welcome">Checking login...</p>
-  <button id="logout">Log Out</button>
+  <header>
+    <h1>GHS Underground</h1>
+    <div class="tagline">
+      <p>Anti-censorship base of freedom</p>
+      <p>Ranking systems, chatrooms, and democratic voting for new features.</p>
+      <p>This isn’t an official school page — it’s the student underground.</p>
+      <p>This is your space. Put it to good use.</p>
+      <p class="founder">Founded by The Sparrow</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="dashboard">
+      <h2 id="welcome-message">Welcome!</h2>
+      <button id="logout-button">Log Out</button>
+      <div class="placeholder">
+        <p>Here will be chatrooms, rankings, and voting features.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 GHS Underground — Founded by The Sparrow</p>
+  </footer>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
     const SUPABASE_URL = 'https://ssszglrcmlxaiwotvlsc.supabase.co'
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzc3pnbHJjbWx4YWl3b3R2bHNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjU4NDMsImV4cCI6MjA3NjAwMTg0M30.zwWxnFEtvwWNLcNEYHRwJpTUCnrJ8bkZniOwUHJBRYQ'
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-    // Check if user is logged in
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) {
-        alert('Not logged in! Redirecting...');
+    // Get current user
+    const user = supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) {
+        // Redirect to login if not logged in
         window.location.href = 'index.html'
+        return
+      }
+
+      const { data: userData } = await supabase
+        .from('users')
+        .select('full_name')
+        .eq('id', data.user.id)
+        .single()
+
+      const welcomeMsg = document.getElementById('welcome-message')
+      if (userData && userData.full_name) {
+        welcomeMsg.textContent = `Welcome, ${userData.full_name}!`
       } else {
-        document.getElementById('welcome').textContent = `Welcome, ${data.session.user.email}!`
+        welcomeMsg.textContent = `Welcome, ${data.user.email}!`
       }
     })
 
-    // Log out button
-    document.getElementById('logout').addEventListener('click', async () => {
+    // Logout button
+    document.getElementById('logout-button').addEventListener('click', async () => {
       await supabase.auth.signOut()
-      alert('Logged out!')
       window.location.href = 'index.html'
     })
   </script>
