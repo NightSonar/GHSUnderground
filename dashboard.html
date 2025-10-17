@@ -47,12 +47,11 @@
 
     // Get current user
     const { data: { user } } = await supabase.auth.getUser()
-
     if (!user) {
       window.location.href = 'index.html'
     }
 
-    // Get full name
+    // --- Full name handling (prompt only once if missing) ---
     let { data: userData } = await supabase
       .from('users')
       .select('full_name')
@@ -62,18 +61,20 @@
     if (!userData) {
       const fullName = prompt('Enter your full name to complete your profile:')
       if (fullName) {
-        await supabase.from('users').insert([{ 
-          id: user.id,
-          full_name: fullName,
-          email: user.email
-        }])
-        userData = { full_name: fullName }
+        const { data: insertData, error: insertError } = await supabase
+          .from('users')
+          .insert([{ 
+            id: user.id,
+            full_name: fullName,
+            email: user.email
+          }])
+        if (!insertError) userData = { full_name: fullName }
       }
     }
 
     // Welcome message
     const welcomeMsg = document.getElementById('welcome-message')
-    welcomeMsg.textContent = `Welcome, ${userData.full_name || user.email}!`
+    welcomeMsg.textContent = `Welcome, ${userData?.full_name || user.email}!`
 
     // Logout
     document.getElementById('logout-button').addEventListener('click', async () => {
@@ -116,7 +117,7 @@
 
       const { error } = await supabase.from('messages').insert([{
         user_id: user.id,
-        full_name: userData.full_name || user.email,
+        full_name: userData?.full_name || user.email,
         content
       }])
 
