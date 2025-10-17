@@ -1,66 +1,4 @@
-/* --- General Page Styles --- */
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f0f4f0;
-  color: #333;
-  margin: 0;
-  padding: 0;
-}
-
-header {
-  background-color: #0d3b2d;
-  color: #fff;
-  padding: 20px;
-  text-align: center;
-}
-
-header h1 {
-  margin: 0;
-}
-
-.tagline p {
-  margin: 4px 0;
-  font-size: 0.9em;
-}
-
-.founder {
-  font-style: italic;
-}
-
-main {
-  padding: 20px;
-}
-
-footer {
-  background-color: #0d3b2d;
-  color: #fff;
-  text-align: center;
-  padding: 10px;
-  margin-top: 20px;
-}
-
-/* --- Dashboard Section --- */
-.dashboard {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-#logout-button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
-  background-color: #0d3b2d;
-  color: #fff;
-  cursor: pointer;
-}
-
-#logout-button:hover {
-  background-color: #11563c;
-}
-
-/* --- Chatroom Styles --- */
+/* --- Chatroom --- */
 .chat-container {
   border: 1px solid #ccc;
   height: 350px;
@@ -76,7 +14,7 @@ footer {
   padding: 6px 10px;
   border-radius: 12px;
   max-width: 75%;
-  color: #000;
+  color: #000 !important;
   background: #fff;
   word-wrap: break-word;
 }
@@ -122,43 +60,4 @@ footer {
 
 #chat-form button:hover {
   background: #11563c;
-}
-
-/* --- Sign Up & Login Forms (if needed) --- */
-form input {
-  display: block;
-  width: 100%;
-  margin-bottom: 10px;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  box-sizing: border-box;
-}
-
-form button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
-  background-color: #0d3b2d;
-  color: #fff;
-  cursor: pointer;
-}
-
-form button:hover {
-  background-color: #11563c;
-}
-
-/* --- Contact The Sparrow section --- */
-.contact-sparrow {
-  margin-top: 20px;
-  padding: 12px;
-  background-color: #fff8c4; /* light yellow background */
-  color: #333;
-  border: 2px solid #f0c000;
-  border-radius: 8px;
-  font-weight: bold;
-  text-align: center;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
 }
