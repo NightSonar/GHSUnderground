@@ -45,11 +45,11 @@
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-    // --- Get current user ---
+    // --- Current user ---
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) window.location.href = 'index.html'
 
-    // --- Fetch full_name ---
+    // --- Fetch full name ---
     let fullName = user.email
     try {
       const { data: userData } = await supabase
@@ -58,22 +58,18 @@
         .eq('id', user.id)
         .single()
 
-      if (!userData) {
-        // Insert new row if missing
-        await supabase.from('users').insert({ id: user.id, full_name: '' })
-      } else if (userData.full_name && userData.full_name.trim() !== '') {
-        fullName = userData.full_name
-      } else {
-        // Ask for full name if empty
-        fullName = prompt("Please enter your full name:")
-        if (fullName && fullName.trim() !== '') {
-          await supabase.from('users').update({ full_name: fullName.trim() }).eq('id', user.id)
-        } else {
-          fullName = user.email
+      if (!userData?.full_name) {
+        // Prompt once if empty
+        const name = prompt('Enter your full name:')
+        if (name) {
+          await supabase.from('users').update({ full_name: name }).eq('id', user.id)
+          fullName = name
         }
+      } else {
+        fullName = userData.full_name
       }
     } catch (err) {
-      console.warn("Error fetching or inserting full_name:", err)
+      console.warn("Error fetching full_name, using email:", err)
     }
 
     document.getElementById('welcome-message').textContent = `Welcome, ${fullName}!`
@@ -84,7 +80,7 @@
       window.location.href = 'index.html'
     })
 
-    // --- Chatroom ---
+    // --- Chat ---
     const chatContainer = document.getElementById('chat-container')
     const chatForm = document.getElementById('chat-form')
     const chatInput = document.getElementById('chat-input')
@@ -110,18 +106,28 @@
     }
     loadMessages()
 
+    // --- Realtime ---
     const chatChannel = supabase
       .channel('public:messages')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => renderMessage(payload.new))
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages' },
+        payload => renderMessage(payload.new)
+      )
       .subscribe()
 
+    // --- Send messages ---
     chatForm.addEventListener('submit', async e => {
       e.preventDefault()
       const content = chatInput.value.trim()
       if (!content) return
 
       const { data, error } = await supabase.from('messages')
-        .insert([{ user_id: user.id, full_name: fullName, content }], { returning: 'representation' })
+        .insert([{
+          user_id: user.id,
+          full_name: fullName,
+          content
+        }], { returning: 'representation' })
 
       if (error) console.error("Insert failed:", error)
       else chatInput.value = ''
