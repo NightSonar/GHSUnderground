@@ -1,84 +1,54 @@
-/* Global Styles */
 body {
   font-family: Arial, sans-serif;
-  background-color: #f0f2f5;
-  color: #111;
+  background: #f0f0f0;
+  color: #333;
   margin: 0;
   padding: 0;
 }
 
-h1, h2, h3 {
-  text-align: center;
-  margin: 10px 0;
-}
-
-/* Header */
 header {
-  background-color: #0d3b2d;
+  background: #0d3b2d;
   color: #fff;
-  padding: 20px 0;
+  padding: 20px;
   text-align: center;
 }
 
 header .tagline p {
-  margin: 4px 0;
+  margin: 5px 0;
 }
 
-header .tagline .founder {
+header .founder {
   font-style: italic;
-  font-size: 0.9em;
   margin-top: 10px;
 }
 
-/* Sections */
-section {
-  background: #fff;
-  max-width: 450px;
-  margin: 30px auto;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+main {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 0 15px;
 }
 
-/* Forms */
-input[type="text"],
-input[type="email"],
-input[type="password"] {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  box-sizing: border-box;
+section.dashboard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
 }
 
 button {
-  width: 100%;
-  padding: 10px;
+  padding: 8px 16px;
   border: none;
   border-radius: 6px;
-  background-color: #0d3b2d;
+  background: #0d3b2d;
   color: #fff;
-  font-weight: bold;
   cursor: pointer;
   transition: background 0.2s ease;
 }
 
 button:hover {
-  background-color: #11563c;
+  background: #11563c;
 }
 
-/* Dashboard Specific */
-.dashboard {
-  text-align: center;
-}
-
-#logout-button {
-  margin-top: 10px;
-  max-width: 150px;
-}
-
-/* Chatroom */
 .chat-container {
   border: 1px solid #ccc;
   height: 350px;
@@ -94,16 +64,17 @@ button:hover {
   padding: 6px 10px;
   border-radius: 12px;
   max-width: 75%;
-  color: #000;
-  background: #fff;
+  color: #fff;          /* white text */
+  background: #0d3b2d;  /* dark green bubble */
   word-wrap: break-word;
 }
 
 .chat-message.current-user {
-  background: #d1ffd6;
+  background: #d1ffd6;  /* light green bubble for current user */
   text-align: right;
   margin-left: auto;
   font-weight: bold;
+  color: #000;          /* dark text for current user */
 }
 
 .chat-message .user {
@@ -128,12 +99,16 @@ button:hover {
   border: 1px solid #ccc;
 }
 
-/* Footer */
-footer {
-  text-align: center;
-  padding: 15px 0;
+#chat-form button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
   background: #0d3b2d;
   color: #fff;
-  font-size: 0.9em;
-  margin-top: 30px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+#chat-form button:hover {
+  background: #11563c;
 }
