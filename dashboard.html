@@ -55,7 +55,7 @@
       const { data: profileData } = await supabase
         .from('profiles')
         .select('full_name')
-        .eq('user_id', user.id)
+        .eq('id', user.id)      // <-- changed from user_id to id
         .single()
       if (profileData?.full_name) fullName = profileData.full_name
     } catch (err) {
@@ -78,10 +78,10 @@
     function renderMessage(msg) {
       const div = document.createElement('div')
       div.classList.add('chat-message')
-      if (msg.user_id === user.id) div.classList.add('current-user')
+      if (msg.id === user.id) div.classList.add('current-user') // <-- use id if needed
 
       const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      div.innerHTML = `<span class="user">${msg.full_name || msg.user_id}:</span> ${msg.content} <span class="time">${time}</span>`
+      div.innerHTML = `<span class="user">${msg.full_name || msg.id}:</span> ${msg.content} <span class="time">${time}</span>` // full_name used
       chatContainer.appendChild(div)
       chatContainer.scrollTop = chatContainer.scrollHeight
     }
@@ -105,7 +105,7 @@
       e.preventDefault()
       const content = chatInput.value.trim()
       if (!content) return
-      const { data, error } = await supabase.from('messages').insert([{ user_id: user.id, full_name: fullName, content }])
+      const { data, error } = await supabase.from('messages').insert([{ id: user.id, full_name: fullName, content }]) // <-- uses full_name
       if (error) console.error("Insert failed:", error)
       chatInput.value = ''
     })
