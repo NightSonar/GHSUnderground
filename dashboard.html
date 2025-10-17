@@ -23,11 +23,11 @@
       <button id="logout-button">Log Out</button>
     </section>
 
-    <!-- NEW CONTACT MESSAGE -->
-    <section class="contact-sparrow">
-      <p style="font-weight:bold; color:#0d3b2d; font-size:1.1em;">
-        Contact The Sparrow to suggest improvements!
-      </p>
+    <!-- Contact section -->
+    <section class="contact-sparrow" style="margin:20px 0; padding:10px; border:2px solid #0d3b2d; border-radius:8px; background:#d1ffd6;">
+      <h3>Contact The Sparrow</h3>
+      <p>Have suggestions or ideas for improvements? Reach out directly!</p>
+      <p>Email: <a href="mailto:thesparrow@example.com">thesparrow@example.com</a></p>
     </section>
 
     <section class="chatroom">
@@ -48,7 +48,8 @@
     import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
     const SUPABASE_URL = 'https://ssszglrcmlxaiwotvlsc.supabase.co'
-    const SUPABASE_ANON_KEY = 'YOUR_API_KEY_HERE'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzc3pnbHJjbWx4YWl3b3R2bHNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjU4NDMsImV4cCI6MjA3NjAwMTg0M30.zwWxnFEtvwWNLcNEYHRwJpTUCnrJ8bkZniOwUHJBRYQ'
+    const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY_HERE'
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
@@ -120,6 +121,7 @@
 
       // insert message with proper full_name from profiles
       const { data, error } = await supabase.from('messages').insert([{
+        user_id: user.id,   // UUID type
         user_id: user.id,
         full_name: fullName,
         content
