@@ -1,7 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
 const SUPABASE_URL = 'https://ssszglrcmlxaiwotvlsc.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzc3pnbHJjbWx4YWl3b3R2bHNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjU4NDMsImV4cCI6MjA3NjAwMTg0M30.zwWxnFEtvwWNLcNEYHRwJpTUCnrJ8bkZniOwUHJBRYQ'
+const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
@@ -29,19 +29,13 @@ signupForm.addEventListener('submit', async e => {
   }
 
   // Insert full name into users table immediately
-  const { error: userError } = await supabase
-    .from('users')
-    .upsert([{ 
-      id: data.user.id,
-      full_name: fullName,
-      email
-    }], { onConflict: ['id'] })
+  await supabase.from('users').insert([{ 
+    id: data.user.id,
+    full_name: fullName,
+    email
+  }])
 
-  if (userError) {
-    alert('Error saving name: ' + userError.message)
-  } else {
-    alert('Sign-up successful! Check your email for verification.')
-  }
+  alert('Sign-up successful! Check your email for verification.')
 })
 
 // --- Log In ---
@@ -55,7 +49,6 @@ loginForm.addEventListener('submit', async e => {
   if (error) {
     alert('Login error: ' + error.message)
   } else {
-    alert('Logged in successfully!')
     window.location.href = 'dashboard.html'
   }
 })
