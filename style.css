@@ -1,132 +1,164 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>GHS Underground - Dashboard</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <header>
-    <h1>GHS Underground</h1>
-    <div class="tagline">
-      <p>Anti-censorship base of freedom</p>
-      <p>Ranking systems, chatrooms, and democratic voting for new features.</p>
-      <p>This isn’t an official school page — it’s the student underground.</p>
-      <p>This is your space. Put it to good use.</p>
-      <p class="founder">Founded by The Sparrow</p>
-    </div>
-  </header>
+/* --- General Page Styles --- */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f4f0;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
 
-  <main>
-    <section class="dashboard">
-      <h2 id="welcome-message">Welcome!</h2>
-      <button id="logout-button">Log Out</button>
-    </section>
+header {
+  background-color: #0d3b2d;
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+}
 
-    <section class="suggestions">
-      <p style="font-weight:bold; color:#0d3b2d; text-align:center; margin:10px 0;">
-        Contact The Sparrow to suggest improvements
-      </p>
-    </section>
+header h1 {
+  margin: 0;
+}
 
-    <section class="chatroom">
-      <h3>Student Chatroom</h3>
-      <div id="chat-container" class="chat-container"></div>
-      <form id="chat-form" onsubmit="return false;">
-        <input type="text" id="chat-input" placeholder="Type your message..." required>
-        <button type="submit">Send</button>
-      </form>
-    </section>
-  </main>
+.tagline p {
+  margin: 4px 0;
+  font-size: 0.9em;
+}
 
-  <footer>
-    <p>&copy; 2025 GHS Underground — Founded by The Sparrow</p>
-  </footer>
+.founder {
+  font-style: italic;
+}
 
-  <script type="module">
-    import { createClient } from 'https://esm.sh/@supabase/supabase-js'
+main {
+  padding: 20px;
+}
 
-    const SUPABASE_URL = 'https://ssszglrcmlxaiwotvlsc.supabase.co'
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzc3pnbHJjbWx4YWl3b3R2bHNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjU4NDMsImV4cCI6MjA3NjAwMTg0M30.zwWxnFEtvwWNLcNEYHRwJpTUCnrJ8bkZniOwUHJBRYQ'
+footer {
+  background-color: #0d3b2d;
+  color: #fff;
+  text-align: center;
+  padding: 10px;
+  margin-top: 20px;
+}
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+/* --- Dashboard Section --- */
+.dashboard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
 
-    // --- Get current user ---
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) window.location.href = 'index.html'
+#logout-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: #0d3b2d;
+  color: #fff;
+  cursor: pointer;
+}
 
-    // --- Fetch full name from profiles ---
-    let fullName = null
-    try {
-      const { data: profileData, error } = await supabase
-        .from('profiles')
-        .select('full_name')
-        .eq('user_id', user.id)
-        .single()
+#logout-button:hover {
+  background-color: #11563c;
+}
 
-      if (error) console.warn("Error fetching profile:", error)
-      if (profileData?.full_name) fullName = profileData.full_name
-    } catch (err) {
-      console.warn("Could not fetch full_name:", err)
-    }
+/* --- Chatroom Styles --- */
+.chat-container {
+  border: 1px solid #ccc;
+  height: 350px;
+  overflow-y: auto;
+  padding: 10px;
+  background: #e4f5e9;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
 
-    // fallback to email if no full name
-    if (!fullName) fullName = user.email
+.chat-message {
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  max-width: 75%;
+  color: #000;
+  background: #fff;
+  word-wrap: break-word;
+}
 
-    document.getElementById('welcome-message').textContent = `Welcome, ${fullName}!`
+.chat-message.current-user {
+  background: #d1ffd6;
+  text-align: right;
+  margin-left: auto;
+  font-weight: bold;
+}
 
-    // --- Logout ---
-    document.getElementById('logout-button').addEventListener('click', async () => {
-      await supabase.auth.signOut()
-      window.location.href = 'index.html'
-    })
+.chat-message .user {
+  font-weight: bold;
+}
 
-    // --- Chatroom ---
-    const chatContainer = document.getElementById('chat-container')
-    const chatForm = document.getElementById('chat-form')
-    const chatInput = document.getElementById('chat-input')
+.chat-message .time {
+  font-size: 0.75em;
+  color: #555;
+  margin-left: 5px;
+}
 
-    function renderMessage(msg) {
-      const div = document.createElement('div')
-      div.classList.add('chat-message')
-      if (msg.user_id === user.id) div.classList.add('current-user')
+#chat-form {
+  display: flex;
+  gap: 10px;
+}
 
-      const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      div.innerHTML = `<span class="user">${msg.full_name || msg.user_id}:</span> ${msg.content} <span class="time">${time}</span>`
-      chatContainer.appendChild(div)
-      chatContainer.scrollTop = chatContainer.scrollHeight
-    }
+#chat-input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
 
-    async function loadMessages() {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .order('created_at', { ascending: true })
-      if (error) console.error("Error loading messages:", error)
-      else data.forEach(renderMessage)
-    }
-    loadMessages()
+#chat-form button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #0d3b2d;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
 
-    const chatChannel = supabase
-      .channel('public:messages')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => renderMessage(payload.new))
-      .subscribe()
+#chat-form button:hover {
+  background: #11563c;
+}
 
-    chatForm.addEventListener('submit', async e => {
-      e.preventDefault()
-      const content = chatInput.value.trim()
-      if (!content) return
+/* --- Sign Up & Login Forms (if needed) --- */
+form input {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
 
-      // insert message with proper full_name from profiles
-      const { data, error } = await supabase.from('messages').insert([{
-        user_id: user.id,
-        full_name: fullName,
-        content
-      }])
+form button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: #0d3b2d;
+  color: #fff;
+  cursor: pointer;
+}
 
-      if (error) console.error("Insert failed:", error)
-      chatInput.value = ''
-    })
-  </script>
-</body>
-</html>
+form button:hover {
+  background-color: #11563c;
+}
+
+/* --- Contact The Sparrow section --- */
+.contact-sparrow {
+  margin-top: 20px;
+  padding: 12px;
+  background-color: #fff8c4; /* light yellow background */
+  color: #333;
+  border: 2px solid #f0c000;
+  border-radius: 8px;
+  font-weight: bold;
+  text-align: center;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
