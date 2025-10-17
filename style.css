@@ -1,8 +1,8 @@
-/* --- General page styling --- */
+/* --- General underground styling --- */
 body {
-  font-family: 'Arial', sans-serif;
-  background: #f2f2f2;
-  color: #0d3b2d;
+  font-family: 'Courier New', monospace;
+  background: #0a0a0a;
+  color: #d1ffd6;
   margin: 0;
   padding: 0;
   display: flex;
@@ -11,26 +11,28 @@ body {
 }
 
 h1 {
-  margin-top: 40px;
+  margin-top: 50px;
   text-align: center;
   font-size: 2.5rem;
-  color: #0d3b2d;
+  color: #00ff99;
+  text-shadow: 0 0 6px #00ff99;
 }
 
 section {
-  background: #e4f5e9;
-  padding: 20px 30px;
+  background: #111;
+  padding: 25px 35px;
   margin: 20px 0;
-  border-radius: 10px;
+  border-radius: 8px;
   width: 90%;
   max-width: 400px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 0 10px rgba(0, 255, 153, 0.3);
 }
 
 h2 {
   margin-top: 0;
-  color: #0d3b2d;
+  color: #00ff99;
   text-align: center;
+  text-shadow: 0 0 4px #00ff99;
 }
 
 form {
@@ -41,41 +43,45 @@ form {
 
 input {
   padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  border: 1px solid #00ff99;
+  border-radius: 4px;
   font-size: 1rem;
+  background: #111;
+  color: #d1ffd6;
+}
+
+input:focus {
+  outline: 2px solid #00ff99;
+  background: #1a1a1a;
 }
 
 button {
   padding: 10px;
   border: none;
-  border-radius: 6px;
-  background: #0d3b2d;
-  color: #fff;
+  border-radius: 4px;
+  background: #00ff99;
+  color: #0a0a0a;
   font-weight: bold;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 button:hover {
-  background: #11563c;
+  background: #00cc77;
+  color: #fff;
 }
 
 p {
-  font-size: 0.9rem;
-  color: #0d3b2d;
+  font-size: 0.85rem;
+  color: #a0ffa0;
   text-align: center;
 }
 
-/* --- Form focus style --- */
-input:focus {
-  outline: 2px solid #0d3b2d;
-}
-
-/* --- Small tagline --- */
+/* Optional small tagline for underground feel */
 .tagline {
   text-align: center;
   font-style: italic;
-  margin-top: 10px;
-  color: #11563c;
+  margin-top: 12px;
+  color: #00ff99;
+  text-shadow: 0 0 2px #00ff99;
 }
