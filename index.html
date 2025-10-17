@@ -2,76 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>GHS Underground - Dashboard</title>
+  <title>GHS Underground</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>GHS Underground</h1>
-    <div class="tagline">
-      <p>Anti-censorship base of freedom</p>
-      <p>Ranking systems, chatrooms, and democratic voting for new features.</p>
-      <p>This isn’t an official school page — it’s the student underground.</p>
-      <p>This is your space. Put it to good use.</p>
-      <p class="founder">Founded by The Sparrow</p>
-    </div>
-  </header>
+  <h1>Welcome to GHS Underground</h1>
 
-  <main>
-    <section class="dashboard">
-      <h2 id="welcome-message">Welcome!</h2>
-      <button id="logout-button">Log Out</button>
-    </section>
-  </main>
+  <section>
+    <h2>Sign Up</h2>
+    <form id="signup-form" onsubmit="return false;">
+      <input type="text" name="full_name" placeholder="Full Name" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit">Sign Up</button>
+    </form>
+  </section>
 
-  <footer>
-    <p>&copy; 2025 GHS Underground — Founded by The Sparrow</p>
-  </footer>
+  <section>
+    <h2>Log In</h2>
+    <form id="login-form" onsubmit="return false;">
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit">Log In</button>
+    </form>
+  </section>
 
-  <script type="module">
-    import { createClient } from 'https://esm.sh/@supabase/supabase-js'
-
-    const SUPABASE_URL = 'https://ssszglrcmlxaiwotvlsc.supabase.co'
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzc3pnbHJjbWx4YWl3b3R2bHNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjU4NDMsImV4cCI6MjA3NjAwMTg0M30.zwWxnFEtvwWNLcNEYHRwJpTUCnrJ8bkZniOwUHJBRYQ'
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-
-    // Get current user
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) window.location.href = 'index.html'
-
-    // --- Full name handling ---
-    let { data: userData } = await supabase
-      .from('users')
-      .select('full_name')
-      .eq('id', user.id)
-      .maybeSingle()
-
-    if (!userData?.full_name) {
-      // Only prompt once if full_name is missing
-      const fullName = prompt('Enter your full name to complete your profile:')
-      if (fullName) {
-        await supabase
-          .from('users')
-          .upsert([{ id: user.id, full_name: fullName, email: user.email }], { onConflict: ['id'] })
-
-        const { data: newData } = await supabase
-          .from('users')
-          .select('full_name')
-          .eq('id', user.id)
-          .single()
-        userData = newData
-      }
-    }
-
-    const welcomeMsg = document.getElementById('welcome-message')
-    welcomeMsg.textContent = `Welcome, ${userData?.full_name || user.email}!`
-
-    // Logout
-    document.getElementById('logout-button').addEventListener('click', async () => {
-      await supabase.auth.signOut()
-      window.location.href = 'index.html'
-    })
-  </script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
