@@ -1,61 +1,102 @@
+/* --- Global --- */
 body {
-  font-family: Arial, sans-serif;
-  background: #f0f0f0;
-  color: #333;
   margin: 0;
-  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f0f5f2;
+  color: #222;
 }
 
+h1, h2, h3 {
+  text-align: center;
+  margin: 10px 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* --- Header --- */
 header {
   background: #0d3b2d;
   color: #fff;
   padding: 20px;
   text-align: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2em;
 }
 
 header .tagline p {
   margin: 5px 0;
+  font-size: 0.9em;
+  font-weight: 300;
 }
 
 header .founder {
   font-style: italic;
+  font-weight: bold;
   margin-top: 10px;
 }
 
-main {
+/* --- Main Sections --- */
+main, section {
   max-width: 900px;
   margin: 20px auto;
   padding: 0 15px;
 }
 
-section.dashboard {
+section form {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
+  flex-direction: column;
+  max-width: 400px;
+  margin: 10px auto;
+  gap: 10px;
+}
+
+input, button {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1em;
 }
 
 button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
   background: #0d3b2d;
   color: #fff;
+  border: none;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s;
 }
 
 button:hover {
   background: #11563c;
 }
 
+/* --- Dashboard --- */
+section.dashboard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+section.dashboard h2 {
+  margin: 0;
+}
+
+/* --- Chatroom --- */
 .chat-container {
   border: 1px solid #ccc;
   height: 350px;
   overflow-y: auto;
   padding: 10px;
-  background: #e4f5e9;
+  background: #e4f5e9; /* pale green */
   border-radius: 8px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
   margin-bottom: 10px;
 }
 
@@ -64,7 +105,7 @@ button:hover {
   padding: 6px 10px;
   border-radius: 12px;
   max-width: 75%;
-  color: #000;
+  color: #000 !important;
   background: #fff;
   word-wrap: break-word;
 }
@@ -96,4 +137,15 @@ button:hover {
   padding: 8px 12px;
   border-radius: 6px;
   border: 1px solid #ccc;
+}
+
+/* --- Footer --- */
+footer {
+  text-align: center;
+  padding: 15px;
+  background: #0d3b2d;
+  color: #fff;
+  margin-top: 30px;
+  font-size: 0.9em;
+  box-shadow: 0 -4px 6px rgba(0,0,0,0.2);
 }
