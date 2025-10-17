@@ -72,11 +72,11 @@
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-    // Get current user
+    // --- Get current user ---
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) window.location.href = 'index.html'
 
-    // Attempt to fetch full name from custom users table
+    // --- Get full name from users table (fallback to email) ---
     let fullName = user.email
     try {
       const { data: userData, error: userError } = await supabase
@@ -92,7 +92,7 @@
 
     document.getElementById('welcome-message').textContent = `Welcome, ${fullName}!`
 
-    // Logout
+    // --- Logout ---
     document.getElementById('logout-button').addEventListener('click', async () => {
       await supabase.auth.signOut()
       window.location.href = 'index.html'
@@ -114,6 +114,7 @@
       chatContainer.scrollTop = chatContainer.scrollHeight
     }
 
+    // --- Load existing messages ---
     async function loadMessages() {
       const { data, error } = await supabase
         .from('messages')
@@ -122,10 +123,9 @@
       if (error) console.error("Error loading messages:", error)
       else data.forEach(renderMessage)
     }
-
     loadMessages()
 
-    // --- Real-time subscription using v2 API ---
+    // --- Real-time subscription (v2 API) ---
     const chatChannel = supabase
       .channel('public:messages')
       .on(
@@ -135,17 +135,18 @@
       )
       .subscribe()
 
-    // Send new message with debug logging
+    // --- Send new messages ---
     chatForm.addEventListener('submit', async e => {
       e.preventDefault()
       const content = chatInput.value.trim()
       if (!content) return
 
-      const { data, error } = await supabase.from('messages').insert([{
-        user_id: user.id,
-        full_name: fullName,
-        content
-      }])
+      const { data, error } = await supabase.from('messages')
+        .insert([{
+          user_id: user.id,
+          full_name: fullName,
+          content
+        }], { returning: 'representation' }) // ensure data is returned
 
       if (error) {
         console.error("Insert failed:", error)
@@ -153,6 +154,7 @@
       } else {
         console.log("Message sent successfully:", data)
         chatInput.value = ''
+        if (data && data[0]) renderMessage(data[0]) // render immediately
       }
     })
   </script>
