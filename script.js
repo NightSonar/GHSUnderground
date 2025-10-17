@@ -5,39 +5,33 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-// --- Helper: allowed emails ---
-function allowedEmail(email) {
-  return /^gw.*@glow\.sch\.uk$/i.test(email)
-}
-
-// --- SIGNUP ---
+// --- Sign Up ---
 const signupForm = document.querySelector('#signup-form')
 signupForm.addEventListener('submit', async e => {
   e.preventDefault()
+  const full_name = e.target.full_name.value.trim()
   const email = e.target.email.value.trim()
   const password = e.target.password.value
 
-  if (!allowedEmail(email)) {
+  // Allow only emails starting with 'gw' and ending with '@glow.sch.uk'
+  if (!/^gw.*@glow\.sch\.uk$/i.test(email)) {
     alert('Email not allowed. Must start with "gw" and end with "@glow.sch.uk"')
     return
   }
 
-  const { data, error } = await supabase.auth.signUp({ email, password })
+  const { data: userData, error } = await supabase.auth.signUp({ email, password })
+
   if (error) {
     alert('Sign up error: ' + error.message)
   } else {
-    // Insert row into custom users table
-    const { error: insertError } = await supabase.from('users').insert([{
-      id: data.user.id,
-      full_name: ''  // empty, will prompt on first login
-    }])
-    if (insertError) console.error('Error creating user row:', insertError)
-
+    // Insert into profiles table immediately
+    await supabase.from('profiles').insert([{ user_id: userData.user.id, full_name }])
     alert('Sign-up successful! Check your email for verification.')
+    window.location.href = 'dashboard.html'
   }
 })
 
-// --- LOGIN ---
+// --- Log In ---
 const loginForm = document.querySelector('#login-form')
 loginForm.addEventListener('submit', async e => {
   e.preventDefault()
@@ -45,10 +39,11 @@ loginForm.addEventListener('submit', async e => {
   const password = e.target.password.value
 
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+
   if (error) {
     alert('Login error: ' + error.message)
   } else {
-    // Go to dashboard after login
+    alert('Logged in successfully!')
     window.location.href = 'dashboard.html'
   }
 })
