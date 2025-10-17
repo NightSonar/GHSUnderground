@@ -49,7 +49,7 @@
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) window.location.href = 'index.html'
 
-    // --- Fetch full name ---
+    // --- Fetch full name from profiles ---
     let fullName = user.email
     try {
       const { data: profileData } = await supabase
@@ -78,10 +78,10 @@
     function renderMessage(msg) {
       const div = document.createElement('div')
       div.classList.add('chat-message')
-      if (msg.id === user.id) div.classList.add('current-user')
+      if (msg.user_id === user.id) div.classList.add('current-user')
 
       const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      div.innerHTML = `<span class="user">${msg.full_name || msg.id}:</span> ${msg.content} <span class="time">${time}</span>`
+      div.innerHTML = `<span class="user">${msg.full_name}:</span> ${msg.content} <span class="time">${time}</span>`
       chatContainer.appendChild(div)
       chatContainer.scrollTop = chatContainer.scrollHeight
     }
@@ -105,8 +105,16 @@
       e.preventDefault()
       const content = chatInput.value.trim()
       if (!content) return
-      const { data, error } = await supabase.from('messages').insert([{ id: user.id, full_name: fullName, content }])
+
+      const { data, error } = await supabase.from('messages').insert([{
+        user_id: user.id,     // must match type uuid/text
+        full_name: fullName,  // display name
+        content
+      }])
+
       if (error) console.error("Insert failed:", error)
+      else console.log("Message sent successfully:", data)
+
       chatInput.value = ''
     })
   </script>
