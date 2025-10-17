@@ -94,7 +94,7 @@ form button:hover {
   padding: 8px 12px;
   border-radius: 12px;
   max-width: 75%;
-  color: #d1ffd6;
+  color: #00ff99; /* changed from #d1ffd6 to bright neon green */
   background: #222;
   word-wrap: break-word;
   box-shadow: 0 0 3px rgba(0, 255, 153, 0.2);
@@ -102,7 +102,7 @@ form button:hover {
 
 .chat-message.current-user {
   background: #00ff99;
-  color: #0a0a0a;
+  color: #0a0a0a; /* keeps current user text readable */
   text-align: right;
   margin-left: auto;
   font-weight: bold;
@@ -154,3 +154,4 @@ form button:hover {
   background: #00cc77;
   color: #fff;
 }
+
