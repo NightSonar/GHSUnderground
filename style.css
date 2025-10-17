@@ -30,10 +30,22 @@ header h1 {
   text-shadow: 1px 1px 3px #000;
 }
 
+/* Tagline */
 header .tagline {
-  font-size: 1.2rem;
+  margin-top: 10px;
   color: #ccc;
-  margin-top: 5px;
+  font-size: 1rem;
+  line-height: 1.4;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+header .tagline .founder {
+  margin-top: 10px;
+  font-style: italic;
+  color: #ffcc00;
 }
 
 /* Forms */
@@ -51,6 +63,12 @@ input {
   padding: 10px;
   border: none;
   border-radius: 5px;
+  background-color: #2a2a2a;
+  color: #f0f0f0;
+}
+
+input::placeholder {
+  color: #888;
 }
 
 button {
