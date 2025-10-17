@@ -23,6 +23,13 @@
       <button id="logout-button">Log Out</button>
     </section>
 
+    <!-- NEW CONTACT MESSAGE -->
+    <section class="contact-sparrow">
+      <p style="font-weight:bold; color:#0d3b2d; font-size:1.1em;">
+        Contact The Sparrow to suggest improvements!
+      </p>
+    </section>
+
     <section class="chatroom">
       <h3>Student Chatroom</h3>
       <div id="chat-container" class="chat-container"></div>
@@ -30,13 +37,6 @@
         <input type="text" id="chat-input" placeholder="Type your message..." required>
         <button type="submit">Send</button>
       </form>
-    </section>
-
-    <!-- New suggestions section -->
-    <section class="suggestions">
-      <p class="contact-sparrow">
-        💡 <strong>Contact The Sparrow to suggest improvements!</strong>
-      </p>
     </section>
   </main>
 
@@ -118,6 +118,7 @@
       const content = chatInput.value.trim()
       if (!content) return
 
+      // insert message with proper full_name from profiles
       const { data, error } = await supabase.from('messages').insert([{
         user_id: user.id,
         full_name: fullName,
