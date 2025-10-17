@@ -85,7 +85,12 @@
       div.classList.add('chat-message')
       if (msg.user_id === user.id) div.classList.add('current-user')
 
-      const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      const time = new Date(msg.created_at + 'Z').toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Europe/London'
+      })
+
       div.innerHTML = `<span class="user">${msg.full_name || msg.user_id}:</span> ${msg.content} <span class="time">${time}</span>`
       chatContainer.appendChild(div)
       chatContainer.scrollTop = chatContainer.scrollHeight
@@ -111,9 +116,8 @@
       const content = chatInput.value.trim()
       if (!content) return
 
-      // insert message with proper full_name from profiles
       const { data, error } = await supabase.from('messages').insert([{
-        user_id: user.id,   // UUID type
+        user_id: user.id,
         full_name: fullName,
         content
       }])
@@ -124,3 +128,4 @@
   </script>
 </body>
 </html>
+
