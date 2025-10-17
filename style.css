@@ -58,7 +58,7 @@ section.dashboard {
   overflow-y: auto;
   padding: 15px;
   border-radius: 8px;
-  background: #0d0d0d; /* darker background for readability */
+  background: #000; /* dark background for contrast */
   border: 1px solid #00ff99;
   box-shadow: inset 0 0 10px rgba(0, 255, 153, 0.2);
 }
@@ -68,15 +68,15 @@ section.dashboard {
   padding: 8px 12px;
   border-radius: 12px;
   max-width: 75%;
-  color: #e0ffe0; /* light text for dark background */
-  background: #1a1a1a; /* darker box background */
+  color: #00ff99; /* light green text for readability */
+  background: #111; /* slightly lighter black for the message bubble */
   word-wrap: break-word;
   box-shadow: 0 0 3px rgba(0, 255, 153, 0.2);
 }
 
 .chat-message.current-user {
-  background: #00cc77; /* slightly darker green for your messages */
-  color: #0d0d0d; /* dark text on green for readability */
+  background: #007f3f; /* darker green bubble for your messages */
+  color: #d1ffd6; /* light green text on your messages */
   text-align: right;
   margin-left: auto;
   font-weight: bold;
@@ -92,6 +92,7 @@ section.dashboard {
   color: #7fffbf;
   margin-left: 5px;
 }
+
 
 #chat-form {
   display: flex;
@@ -131,3 +132,4 @@ footer {
   border-top: 2px solid #00ff99;
   margin-top: 30px;
 }
+
