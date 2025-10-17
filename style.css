@@ -64,16 +64,17 @@ button:hover {
   padding: 6px 10px;
   border-radius: 12px;
   max-width: 75%;
-  color: #000;
-  background: #fff;
+  color: #fff;          /* white text */
+  background: #0d3b2d;  /* dark green bubble */
   word-wrap: break-word;
 }
 
 .chat-message.current-user {
-  background: #d1ffd6;
+  background: #d1ffd6;  /* light green bubble for current user */
   text-align: right;
   margin-left: auto;
   font-weight: bold;
+  color: #000;          /* dark text for current user */
 }
 
 .chat-message .user {
@@ -96,4 +97,18 @@ button:hover {
   padding: 8px 12px;
   border-radius: 6px;
   border: 1px solid #ccc;
+}
+
+#chat-form button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #0d3b2d;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+#chat-form button:hover {
+  background: #11563c;
 }
