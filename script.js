@@ -1,7 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
 const SUPABASE_URL = 'https://ssszglrcmlxaiwotvlsc.supabase.co'
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY_HERE'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzc3pnbHJjbWx4YWl3b3R2bHNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjU4NDMsImV4cCI6MjA3NjAwMTg0M30.zwWxnFEtvwWNLcNEYHRwJpTUCnrJ8bkZniOwUHJBRYQ'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
@@ -18,7 +18,6 @@ signupForm.addEventListener('submit', async e => {
     return
   }
 
-  // Sign up user
   const { data: signupData, error: signupError } = await supabase.auth.signUp({
     email,
     password
@@ -29,11 +28,11 @@ signupForm.addEventListener('submit', async e => {
     return
   }
 
-  // Add to profiles table
+  // Insert into profiles
   const { error: profileError } = await supabase.from('profiles').insert([
     {
-      id: signupData.user.id,   // auth user id
-      full_name: fullName,      // THIS IS THE IMPORTANT FIX
+      id: signupData.user.id,
+      full_name: fullName,
       email: email
     }
   ])
