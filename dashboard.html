@@ -5,20 +5,27 @@
   <title>GHS Underground - Dashboard</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Chatroom styling */
+    /* Force chat text readable */
+    .chat-message {
+      color: #000 !important; /* black text for all messages */
+    }
+    .chat-message.current-user {
+      color: #000 !important;
+    }
+
+    /* Chat container */
     .chat-container {
       border: 1px solid #ccc;
       height: 300px;
       overflow-y: auto;
       padding: 10px;
-      background: #d1ffd6; /* light green */
+      background: #d1ffd6;
       margin-bottom: 10px;
     }
     .chat-message {
       margin-bottom: 5px;
       padding: 3px 6px;
       border-radius: 5px;
-      color: #000; /* black text for readability */
     }
     .chat-message.current-user {
       text-align: right;
@@ -78,7 +85,7 @@
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) window.location.href = 'index.html'
 
-    // --- Fetch full name, fallback to email ---
+    // --- Fetch or create full name ---
     let fullName = user.email
     try {
       const { data: userData, error: userError } = await supabase
@@ -86,8 +93,13 @@
         .select('full_name')
         .eq('id', user.id)
         .single()
-      if (userError) console.warn("Could not fetch full_name, using email:", userError)
-      else if (userData?.full_name) fullName = userData.full_name
+
+      if (userData?.full_name) {
+        fullName = userData.full_name
+      } else {
+        // No row yet, insert using email as default full_name
+        await supabase.from('users').upsert({ id: user.id, full_name: user.email })
+      }
     } catch (err) {
       console.warn("Error fetching full_name, using email:", err)
     }
@@ -116,6 +128,7 @@
       chatContainer.scrollTop = chatContainer.scrollHeight
     }
 
+    // --- Load existing messages ---
     async function loadMessages() {
       const { data, error } = await supabase
         .from('messages')
