@@ -50,7 +50,6 @@
     <p>&copy; 2025 GHS Underground — Founded by The Sparrow</p>
   </footer>
 
-  <!-- SCRIPT -->
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
@@ -71,13 +70,11 @@
         .select('full_name')
         .eq('user_id', user.id)
         .single()
-
       if (error) console.warn("Error fetching profile:", error)
       if (profileData?.full_name) fullName = profileData.full_name
     } catch (err) {
       console.warn("Could not fetch full_name:", err)
     }
-
     if (!fullName) fullName = user.email
     document.getElementById('welcome-message').textContent = `Welcome, ${fullName}!`
 
@@ -88,7 +85,7 @@
     })
 
     // ======================
-    //   CHATROOM SECTION
+    // CHATROOM
     // ======================
     const chatContainer = document.getElementById('chat-container')
     const chatForm = document.getElementById('chat-form')
@@ -100,9 +97,7 @@
       if (msg.user_id === user.id) div.classList.add('current-user')
 
       const time = new Date(msg.created_at + 'Z').toLocaleTimeString('en-GB', {
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'Europe/London'
+        hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London'
       })
 
       div.innerHTML = `<span class="user">${msg.full_name || msg.user_id}:</span> ${msg.content} <span class="time">${time}</span>`
@@ -111,17 +106,13 @@
     }
 
     async function loadMessages() {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .order('created_at', { ascending: true })
+      const { data, error } = await supabase.from('messages').select('*').order('created_at', { ascending: true })
       if (error) console.error("Error loading messages:", error)
       else data.forEach(renderMessage)
     }
     loadMessages()
 
-    const chatChannel = supabase
-      .channel('public:messages')
+    const chatChannel = supabase.channel('public:messages')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => renderMessage(payload.new))
       .subscribe()
 
@@ -129,13 +120,7 @@
       e.preventDefault()
       const content = chatInput.value.trim()
       if (!content) return
-
-      const { error } = await supabase.from('messages').insert([{
-        user_id: user.id,
-        full_name: fullName,
-        content
-      }])
-
+      const { error } = await supabase.from('messages').insert([{ user_id: user.id, full_name: fullName, content }])
       if (error) console.error("Insert failed:", error)
       chatInput.value = ''
     })
@@ -160,16 +145,28 @@
           <button class="upvote-button" data-id="${s.id}">▲ ${s.upvotes || 0}</button>
         </div>`
 
-      // Upvote click listener
       div.querySelector('.upvote-button').addEventListener('click', async () => {
-        const { data, error } = await supabase
+        // Try to insert vote (one per user)
+        const { data, error } = await supabase.from('suggestion_votes').insert([{
+          suggestion_id: s.id,
+          user_id: user.id
+        }])
+
+        if (error) {
+          if (error.code === '23505') alert("You have already voted for this suggestion!")
+          else console.error("Vote failed:", error)
+          return
+        }
+
+        // Increment upvotes in suggestions table
+        const { data: updated, error: updateError } = await supabase
           .from('suggestions')
-          .update({ upvotes: (s.upvotes || 0) + 1 })
+          .update({ upvotes: s.upvotes + 1 })
           .eq('id', s.id)
           .select()
 
-        if (!error && data.length > 0) {
-          s.upvotes = data[0].upvotes
+        if (!updateError && updated.length > 0) {
+          s.upvotes = updated[0].upvotes
           div.querySelector('.upvote-button').textContent = `▲ ${s.upvotes}`
           sortSuggestions()
         }
@@ -193,14 +190,13 @@
         .from('suggestions')
         .select('*')
         .order('upvotes', { ascending: false })
-        .order('created_at', { ascending: false }) // tie-breaker
+        .order('created_at', { ascending: false })
       if (error) console.error("Error loading suggestions:", error)
       else data.forEach(renderSuggestion)
     }
     loadSuggestions()
 
-    const suggestionsChannel = supabase
-      .channel('public:suggestions')
+    const suggestionsChannel = supabase.channel('public:suggestions')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'suggestions' }, payload => renderSuggestion(payload.new))
       .subscribe()
 
@@ -209,20 +205,9 @@
       const title = titleInput.value.trim()
       const content = contentInput.value.trim()
       if (!title || !content) return
-
-      const { error } = await supabase.from('suggestions').insert([{
-        user_id: user.id,
-        full_name: fullName,
-        title,
-        content,
-        upvotes: 0
-      }])
-
+      const { error } = await supabase.from('suggestions').insert([{ user_id: user.id, full_name: fullName, title, content, upvotes: 0 }])
       if (error) console.error("Insert failed:", error)
-      else {
-        titleInput.value = ''
-        contentInput.value = ''
-      }
+      else { titleInput.value = ''; contentInput.value = '' }
     })
   </script>
 </body>
