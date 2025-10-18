@@ -18,11 +18,13 @@
   </header>
 
   <main>
+    <!-- DASHBOARD SECTION -->
     <section class="dashboard">
       <h2 id="welcome-message">Welcome!</h2>
       <button id="logout-button">Log Out</button>
     </section>
 
+    <!-- CHATROOM SECTION -->
     <section class="chatroom">
       <h3>Student Chatroom</h3>
       <div id="chat-container" class="chat-container"></div>
@@ -31,12 +33,24 @@
         <button type="submit">Send</button>
       </form>
     </section>
+
+    <!-- COMMUNITY SUGGESTIONS SECTION -->
+    <section class="suggestions">
+      <h3>Community Suggestions</h3>
+      <form id="suggestion-form" onsubmit="return false;">
+        <input type="text" id="suggestion-title" placeholder="Title" required>
+        <textarea id="suggestion-content" placeholder="Describe your idea..." required></textarea>
+        <button type="submit">Post</button>
+      </form>
+      <div id="suggestions-feed" class="suggestions-feed"></div>
+    </section>
   </main>
 
   <footer>
     <p>&copy; 2025 GHS Underground — Founded by The Sparrow</p>
   </footer>
 
+  <!-- SCRIPT -->
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
@@ -45,11 +59,11 @@
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-    // --- Get current user ---
+    // --- AUTH ---
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) window.location.href = 'index.html'
 
-    // --- Fetch full name from profiles ---
+    // --- FETCH PROFILE NAME ---
     let fullName = null
     try {
       const { data: profileData, error } = await supabase
@@ -64,18 +78,18 @@
       console.warn("Could not fetch full_name:", err)
     }
 
-    // fallback to email if no full name
     if (!fullName) fullName = user.email
-
     document.getElementById('welcome-message').textContent = `Welcome, ${fullName}!`
 
-    // --- Logout ---
+    // --- LOGOUT ---
     document.getElementById('logout-button').addEventListener('click', async () => {
       await supabase.auth.signOut()
       window.location.href = 'index.html'
     })
 
-    // --- Chatroom ---
+    // ======================
+    //   CHATROOM SECTION
+    // ======================
     const chatContainer = document.getElementById('chat-container')
     const chatForm = document.getElementById('chat-form')
     const chatInput = document.getElementById('chat-input')
@@ -116,7 +130,7 @@
       const content = chatInput.value.trim()
       if (!content) return
 
-      const { data, error } = await supabase.from('messages').insert([{
+      const { error } = await supabase.from('messages').insert([{
         user_id: user.id,
         full_name: fullName,
         content
@@ -125,7 +139,62 @@
       if (error) console.error("Insert failed:", error)
       chatInput.value = ''
     })
+
+    // ======================
+    // COMMUNITY SUGGESTIONS
+    // ======================
+    const suggestionsFeed = document.getElementById('suggestions-feed')
+    const suggestionForm = document.getElementById('suggestion-form')
+    const titleInput = document.getElementById('suggestion-title')
+    const contentInput = document.getElementById('suggestion-content')
+
+    function renderSuggestion(s) {
+      const div = document.createElement('div')
+      div.classList.add('suggestion')
+      div.innerHTML = `
+        <h4>${s.title}</h4>
+        <p>${s.content}</p>
+        <div class="meta">
+          <span>By: ${s.full_name || 'Anonymous'}</span>
+          <span>${new Date(s.created_at + 'Z').toLocaleString('en-GB')}</span>
+        </div>`
+      suggestionsFeed.prepend(div)
+    }
+
+    async function loadSuggestions() {
+      const { data, error } = await supabase
+        .from('suggestions')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (error) console.error("Error loading suggestions:", error)
+      else data.forEach(renderSuggestion)
+    }
+    loadSuggestions()
+
+    const suggestionsChannel = supabase
+      .channel('public:suggestions')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'suggestions' }, payload => renderSuggestion(payload.new))
+      .subscribe()
+
+    suggestionForm.addEventListener('submit', async e => {
+      e.preventDefault()
+      const title = titleInput.value.trim()
+      const content = contentInput.value.trim()
+      if (!title || !content) return
+
+      const { error } = await supabase.from('suggestions').insert([{
+        user_id: user.id,
+        full_name: fullName,
+        title,
+        content
+      }])
+
+      if (error) console.error("Insert failed:", error)
+      else {
+        titleInput.value = ''
+        contentInput.value = ''
+      }
+    })
   </script>
 </body>
 </html>
-
