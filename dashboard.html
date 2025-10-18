@@ -126,7 +126,7 @@
     })
 
     // ======================
-    // COMMUNITY SUGGESTIONS
+    // COMMUNITY SUGGESTIONS WITH TOGGLE UPVOTE
     // ======================
     const suggestionsFeed = document.getElementById('suggestions-feed')
     const suggestionForm = document.getElementById('suggestion-form')
@@ -145,30 +145,55 @@
           <button class="upvote-button" data-id="${s.id}">▲ ${s.upvotes || 0}</button>
         </div>`
 
-      div.querySelector('.upvote-button').addEventListener('click', async () => {
-        // Try to insert vote (one per user)
-        const { data, error } = await supabase.from('suggestion_votes').insert([{
-          suggestion_id: s.id,
-          user_id: user.id
-        }])
+      const button = div.querySelector('.upvote-button')
+      button.addEventListener('click', async () => {
+        // Check if user already voted
+        const { data: existingVotes, error: selectError } = await supabase
+          .from('suggestion_votes')
+          .select('*')
+          .eq('suggestion_id', s.id)
+          .eq('user_id', user.id)
 
-        if (error) {
-          if (error.code === '23505') alert("You have already voted for this suggestion!")
-          else console.error("Vote failed:", error)
-          return
-        }
+        if (selectError) return console.error("Vote check failed:", selectError)
 
-        // Increment upvotes in suggestions table
-        const { data: updated, error: updateError } = await supabase
-          .from('suggestions')
-          .update({ upvotes: s.upvotes + 1 })
-          .eq('id', s.id)
-          .select()
+        if (existingVotes.length > 0) {
+          // Already voted -> remove vote
+          const { error: deleteError } = await supabase
+            .from('suggestion_votes')
+            .delete()
+            .eq('suggestion_id', s.id)
+            .eq('user_id', user.id)
+          if (deleteError) return console.error("Remove vote failed:", deleteError)
 
-        if (!updateError && updated.length > 0) {
-          s.upvotes = updated[0].upvotes
-          div.querySelector('.upvote-button').textContent = `▲ ${s.upvotes}`
-          sortSuggestions()
+          // Decrement upvotes
+          const { data: updated, error: updateError } = await supabase
+            .from('suggestions')
+            .update({ upvotes: s.upvotes - 1 })
+            .eq('id', s.id)
+            .select()
+          if (!updateError && updated.length > 0) {
+            s.upvotes = updated[0].upvotes
+            button.textContent = `▲ ${s.upvotes}`
+            sortSuggestions()
+          }
+        } else {
+          // Not voted -> insert vote
+          const { data: insertData, error: insertError } = await supabase
+            .from('suggestion_votes')
+            .insert([{ suggestion_id: s.id, user_id: user.id }])
+          if (insertError) return console.error("Vote insert failed:", insertError)
+
+          // Increment upvotes
+          const { data: updated, error: updateError } = await supabase
+            .from('suggestions')
+            .update({ upvotes: s.upvotes + 1 })
+            .eq('id', s.id)
+            .select()
+          if (!updateError && updated.length > 0) {
+            s.upvotes = updated[0].upvotes
+            button.textContent = `▲ ${s.upvotes}`
+            sortSuggestions()
+          }
         }
       })
 
