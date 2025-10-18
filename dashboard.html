@@ -157,15 +157,43 @@
         <div class="meta">
           <span>By: ${s.full_name || 'Anonymous'}</span>
           <span>${new Date(s.created_at + 'Z').toLocaleString('en-GB')}</span>
+          <button class="upvote-button" data-id="${s.id}">▲ ${s.upvotes || 0}</button>
         </div>`
-      suggestionsFeed.prepend(div)
+
+      // Upvote click listener
+      div.querySelector('.upvote-button').addEventListener('click', async () => {
+        const { data, error } = await supabase
+          .from('suggestions')
+          .update({ upvotes: (s.upvotes || 0) + 1 })
+          .eq('id', s.id)
+          .select()
+
+        if (!error && data.length > 0) {
+          s.upvotes = data[0].upvotes
+          div.querySelector('.upvote-button').textContent = `▲ ${s.upvotes}`
+          sortSuggestions()
+        }
+      })
+
+      suggestionsFeed.appendChild(div)
+    }
+
+    function sortSuggestions() {
+      const children = Array.from(suggestionsFeed.children)
+      children.sort((a, b) => {
+        const aVotes = parseInt(a.querySelector('.upvote-button').textContent.replace('▲ ', ''))
+        const bVotes = parseInt(b.querySelector('.upvote-button').textContent.replace('▲ ', ''))
+        return bVotes - aVotes
+      })
+      children.forEach(c => suggestionsFeed.appendChild(c))
     }
 
     async function loadSuggestions() {
       const { data, error } = await supabase
         .from('suggestions')
         .select('*')
-        .order('created_at', { ascending: false })
+        .order('upvotes', { ascending: false })
+        .order('created_at', { ascending: false }) // tie-breaker
       if (error) console.error("Error loading suggestions:", error)
       else data.forEach(renderSuggestion)
     }
@@ -186,7 +214,8 @@
         user_id: user.id,
         full_name: fullName,
         title,
-        content
+        content,
+        upvotes: 0
       }])
 
       if (error) console.error("Insert failed:", error)
