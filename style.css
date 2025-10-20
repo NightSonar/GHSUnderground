@@ -225,12 +225,13 @@ footer {
 
 /* ------------------ Reply Message Styling ------------------ */
 .replying-to {
-  font-size: 0.85em;
-  color: #7fffbf;
-  margin-bottom: 3px;
-  padding-left: 8px;
-  border-left: 2px solid #00ff99;
+  font-style: italic;
+  color: #aaffaa;
+  margin-bottom: 4px;
+  border-left: 3px solid #00ff99;
+  padding-left: 6px;
 }
+
 
 
 
