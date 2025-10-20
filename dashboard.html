@@ -107,7 +107,10 @@ const chatContainer = document.getElementById('chat-container');
 const chatForm = document.getElementById('chat-form');
 const chatInput = document.getElementById('chat-input');
 
-// Render a single message (or reply)
+// Cache for original messages to avoid multiple fetches
+const messageCache = {};
+
+// Render a single message (normal or reply)
 function renderMessage(msg) {
   const div = document.createElement('div');
   div.classList.add('chat-message');
@@ -120,14 +123,14 @@ function renderMessage(msg) {
     timeZone: 'Europe/London'
   });
 
-  // If this message is a reply, show the original message content
-  let replyHeader = '';
-  if (msg.reply_to && msg.reply_to.content) {
-    replyHeader = `<div class="replying-to">Replying to: "${msg.reply_to.content}"</div>`;
+  // Determine reply text
+  let replyText = '';
+  if (msg.reply_to_id && msg.reply_to_content) {
+    replyText = `<div class="replying-to">Replying to: "${msg.reply_to_content}"</div>`;
   }
 
   div.innerHTML = `
-    ${replyHeader}
+    ${replyText}
     <span class="user">${msg.full_name || msg.user_id}:</span> ${msg.content} 
     <span class="time">${time}</span>
     <button class="reply-button" data-id="${msg.id}">Reply</button>
@@ -136,30 +139,37 @@ function renderMessage(msg) {
   chatContainer.appendChild(div);
   chatContainer.scrollTop = chatContainer.scrollHeight;
 
-  // Reply button functionality
+  // Store in cache
+  messageCache[msg.id] = msg;
+
+  // Reply button
   const replyBtn = div.querySelector('.reply-button');
   replyBtn.addEventListener('click', async () => {
-    const replyText = prompt(`Reply to ${msg.full_name || msg.user_id}:`);
-    if (!replyText) return;
+    const replyTextInput = prompt(`Reply to ${msg.full_name || msg.user_id}:`);
+    if (!replyTextInput) return;
 
     // Insert reply as a new message with reply_to_id
     const { error } = await supabase.from('messages').insert([{
       user_id: user.id,
       full_name: fullName,
-      content: replyText,
+      content: replyTextInput,
       reply_to_id: msg.id
     }]);
+
     if (error) console.error("Reply insert failed:", error);
   });
 }
 
+// Load messages with reply content
 async function loadMessages() {
-  chatContainer.innerHTML = ''; // clear the container first
+  chatContainer.innerHTML = ''; // clear container
 
-  // Fetch all messages
   const { data, error } = await supabase
     .from('messages')
-    .select('*, reply_to_id')
+    .select(`
+      *,
+      reply_to:messages(id, content)
+    `)
     .order('created_at', { ascending: true });
 
   if (error) {
@@ -167,59 +177,25 @@ async function loadMessages() {
     return;
   }
 
-  // Build a map of message IDs to contents for replies
-  const messageMap = {};
-  data.forEach(m => {
-    messageMap[m.id] = m.content;
-  });
-
-  // Render each message
   data.forEach(msg => {
-    const div = document.createElement('div');
-    div.classList.add('chat-message');
-    if (msg.user_id === user.id) div.classList.add('current-user');
-
-    const time = new Date(msg.created_at + 'Z').toLocaleTimeString('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'Europe/London'
-    });
-
-    let replyHeader = '';
-    if (msg.reply_to_id && messageMap[msg.reply_to_id]) {
-      replyHeader = `<div class="replying-to">Replying to: "${messageMap[msg.reply_to_id]}"</div>`;
-    }
-
-    div.innerHTML = `
-      ${replyHeader}
-      <span class="user">${msg.full_name || msg.user_id}:</span> ${msg.content}
-      <span class="time">${time}</span>
-      <button class="reply-button" data-id="${msg.id}">Reply</button>
-    `;
-
-    chatContainer.appendChild(div);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-
-    const replyBtn = div.querySelector('.reply-button');
-    replyBtn.addEventListener('click', async () => {
-      const replyText = prompt(`Reply to ${msg.full_name || msg.user_id}:`);
-      if (!replyText) return;
-
-      const { error } = await supabase.from('messages').insert([{
-        user_id: user.id,
-        full_name: fullName,
-        content: replyText,
-        reply_to_id: msg.id
-      }]);
-      if (error) console.error("Reply insert failed:", error);
-    });
+    // Flatten reply content
+    msg.reply_to_content = msg.reply_to?.content || null;
+    renderMessage(msg);
   });
 }
 
-
-// Real-time messages
+// Real-time listener
 const chatChannel = supabase.channel('public:messages')
-  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => renderMessage(payload.new))
+  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+    const msg = payload.new;
+    msg.reply_to_content = null;
+
+    if (msg.reply_to_id && messageCache[msg.reply_to_id]) {
+      msg.reply_to_content = messageCache[msg.reply_to_id].content;
+    }
+
+    renderMessage(msg);
+  })
   .subscribe();
 
 // Send a normal message
@@ -238,6 +214,8 @@ chatForm.addEventListener('submit', async e => {
   chatInput.value = '';
 });
 
+// Initial load
+loadMessages();
 
 
     // ======================
@@ -346,6 +324,7 @@ chatForm.addEventListener('submit', async e => {
   </script>
 </body>
 </html>
+
 
 
 
