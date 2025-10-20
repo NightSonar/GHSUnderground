@@ -223,14 +223,45 @@ footer {
   transform: scale(0.95);     /* pressed effect */
 }
 
-/* ------------------ Chat Reply ------------------ */
-.chat-reply {
-  background: #001100;       /* very dark green/black for reply bubble */
-  border-left: 3px solid #00ff99; /* bright green indicator */
-  padding: 4px 10px;
-  margin-bottom: 4px;
-  border-radius: 6px;
-  font-size: 0.85em;
-  color: #aaffaa;            /* lighter green text for replies */
-  word-wrap: break-word;
+/* ------------------ Chat Replies ------------------ */
+.chat-replies {
+  margin-top: 5px;
+  margin-left: 30px; /* indent replies */
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
+
+.chat-reply {
+  background: #003300; /* darker green background for replies */
+  color: #b3ffb3;      /* lighter text for readability */
+  padding: 6px 10px;
+  border-radius: 10px;
+  max-width: 70%;
+  word-wrap: break-word;
+  font-size: 0.9em;     /* slightly smaller than main messages */
+  box-shadow: inset 0 0 5px rgba(0, 255, 153, 0.2);
+}
+
+.chat-reply .reply-user {
+  font-weight: bold;
+  color: #00ff99;       /* distinguish who replied */
+  margin-right: 4px;
+}
+
+.reply-button {
+  margin-top: 2px;
+  background: #004d00;
+  color: #e0ffe0;
+  border: none;
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 0.75em;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.reply-button:hover {
+  background: #00cc77;
+}
+
