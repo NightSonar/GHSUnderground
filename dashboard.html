@@ -1,3 +1,5 @@
+That's not my dashboard, this is:
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -54,7 +56,7 @@
     import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
     const SUPABASE_URL = 'https://ssszglrcmlxaiwotvlsc.supabase.co'
-    const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY_HERE'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzc3pnbHJjbWx4YWl3b3R2bHNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjU4NDMsImV4cCI6MjA3NjAwMTg0M30.zwWxnFEtvwWNLcNEYHRwJpTUCnrJ8bkZniOwUHJBRYQ'
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
@@ -100,44 +102,55 @@
         hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London'
       })
 
-      // Include inline reply if exists
-      const replyHTML = msg.reply_to_full_name
-        ? `<div class="chat-reply">Reply to ${msg.reply_to_full_name}:</div>`
-        : ''
-
       div.innerHTML = `
-        ${replyHTML}
-        <span class="user">${msg.full_name || msg.user_id}:</span> ${msg.content}
+        <span class="user">${msg.full_name || msg.user_id}:</span> 
+        ${msg.content} 
         <span class="time">${time}</span>
-        <button class="reply-button" data-id="${msg.id}" data-user="${msg.full_name || msg.user_id}">Reply</button>
+        <div class="chat-replies" id="replies-${msg.id}"></div>
+        <button class="reply-button" data-id="${msg.id}">Reply</button>
       `
+
       chatContainer.appendChild(div)
       chatContainer.scrollTop = chatContainer.scrollHeight
 
-      // Reply button handler
+      // Load replies if exist
+      if (msg.replies) {
+        const repliesContainer = div.querySelector(`#replies-${msg.id}`)
+        msg.replies.forEach(r => {
+          const rDiv = document.createElement('div')
+          rDiv.classList.add('chat-reply')
+          rDiv.innerHTML = `<span class="reply-user">${r.full_name || r.user_id}:</span> ${r.content}`
+          repliesContainer.appendChild(rDiv)
+        })
+      }
+
+      // Reply button listener
       const replyBtn = div.querySelector('.reply-button')
-      replyBtn.addEventListener('click', () => {
+      replyBtn.addEventListener('click', async () => {
         const replyText = prompt(`Reply to ${msg.full_name || msg.user_id}:`)
         if (!replyText) return
-        supabase.from('messages').insert([{
+
+        const { error } = await supabase.from('message_replies').insert([{
+          message_id: msg.id,
           user_id: user.id,
           full_name: fullName,
-          content: replyText,
-          reply_to_full_name: msg.full_name || msg.user_id
+          content: replyText
         }])
-        .then(({ error }) => {
-          if (error) console.error("Reply insert failed:", error)
-        })
+        if (error) console.error("Reply insert failed:", error)
       })
     }
 
     async function loadMessages() {
+      // fetch messages with replies
       const { data, error } = await supabase
         .from('messages')
-        .select('*')
+        .select(`*, message_replies(*)`)
         .order('created_at', { ascending: true })
       if (error) console.error("Error loading messages:", error)
-      else data.forEach(renderMessage)
+      else data.forEach(msg => {
+        msg.replies = msg.message_replies
+        renderMessage(msg)
+      })
     }
     loadMessages()
 
@@ -149,8 +162,113 @@
       e.preventDefault()
       const content = chatInput.value.trim()
       if (!content) return
-      await supabase.from('messages').insert([{ user_id: user.id, full_name: fullName, content }])
+      const { error } = await supabase.from('messages').insert([{ user_id: user.id, full_name: fullName, content }])
+      if (error) console.error("Insert failed:", error)
       chatInput.value = ''
+    })
+
+    // ======================
+    // COMMUNITY SUGGESTIONS
+    // ======================
+    const suggestionsFeed = document.getElementById('suggestions-feed')
+    const suggestionForm = document.getElementById('suggestion-form')
+    const titleInput = document.getElementById('suggestion-title')
+    const contentInput = document.getElementById('suggestion-content')
+
+    function renderSuggestion(s) {
+      const div = document.createElement('div')
+      div.classList.add('suggestion')
+      div.innerHTML = `
+        <h4>${s.title}</h4>
+        <p>${s.content}</p>
+        <div class="meta">
+          <span>By: ${s.full_name || 'Anonymous'}</span>
+          <span>${new Date(s.created_at + 'Z').toLocaleString('en-GB')}</span>
+          <button class="upvote-button" data-id="${s.id}">▲ ${s.upvotes || 0}</button>
+        </div>`
+
+      const button = div.querySelector('.upvote-button')
+      button.addEventListener('click', async () => {
+        const { data: existingVotes, error: selectError } = await supabase
+          .from('suggestion_votes')
+          .select('*')
+          .eq('suggestion_id', s.id)
+          .eq('user_id', user.id)
+        if (selectError) return console.error("Vote check failed:", selectError)
+
+        if (existingVotes.length > 0) {
+          const { error: deleteError } = await supabase
+            .from('suggestion_votes')
+            .delete()
+            .eq('suggestion_id', s.id)
+            .eq('user_id', user.id)
+          if (deleteError) return console.error("Remove vote failed:", deleteError)
+
+          const { data: updated, error: updateError } = await supabase
+            .from('suggestions')
+            .update({ upvotes: s.upvotes - 1 })
+            .eq('id', s.id)
+            .select()
+          if (!updateError && updated.length > 0) {
+            s.upvotes = updated[0].upvotes
+            button.textContent = `▲ ${s.upvotes}`
+            sortSuggestions()
+          }
+        } else {
+          const { data: insertData, error: insertError } = await supabase
+            .from('suggestion_votes')
+            .insert([{ suggestion_id: s.id, user_id: user.id }])
+          if (insertError) return console.error("Vote insert failed:", insertError)
+
+          const { data: updated, error: updateError } = await supabase
+            .from('suggestions')
+            .update({ upvotes: s.upvotes + 1 })
+            .eq('id', s.id)
+            .select()
+          if (!updateError && updated.length > 0) {
+            s.upvotes = updated[0].upvotes
+            button.textContent = `▲ ${s.upvotes}`
+            sortSuggestions()
+          }
+        }
+      })
+
+      suggestionsFeed.appendChild(div)
+    }
+
+    function sortSuggestions() {
+      const children = Array.from(suggestionsFeed.children)
+      children.sort((a, b) => {
+        const aVotes = parseInt(a.querySelector('.upvote-button').textContent.replace('▲ ', ''))
+        const bVotes = parseInt(b.querySelector('.upvote-button').textContent.replace('▲ ', ''))
+        return bVotes - aVotes
+      })
+      children.forEach(c => suggestionsFeed.appendChild(c))
+    }
+
+    async function loadSuggestions() {
+      const { data, error } = await supabase
+        .from('suggestions')
+        .select('*')
+        .order('upvotes', { ascending: false })
+        .order('created_at', { ascending: false })
+      if (error) console.error("Error loading suggestions:", error)
+      else data.forEach(renderSuggestion)
+    }
+    loadSuggestions()
+
+    const suggestionsChannel = supabase.channel('public:suggestions')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'suggestions' }, payload => renderSuggestion(payload.new))
+      .subscribe()
+
+    suggestionForm.addEventListener('submit', async e => {
+      e.preventDefault()
+      const title = titleInput.value.trim()
+      const content = contentInput.value.trim()
+      if (!title || !content) return
+      const { error } = await supabase.from('suggestions').insert([{ user_id: user.id, full_name: fullName, title, content, upvotes: 0 }])
+      if (error) console.error("Insert failed:", error)
+      else { titleInput.value = ''; contentInput.value = '' }
     })
   </script>
 </body>
