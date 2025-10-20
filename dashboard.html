@@ -106,17 +106,14 @@ const chatContainer = document.getElementById('chat-container');
 const chatForm = document.getElementById('chat-form');
 const chatInput = document.getElementById('chat-input');
 
-// Cache rendered messages to prevent duplicates
 const renderedMessages = new Set();
-
-// Store messages in memory for easy lookup of reply content
 const messageCache = {};
 
 // Render a single message
 function renderMessage(msg) {
-  if (renderedMessages.has(msg.id)) return; // skip if already rendered
+  if (renderedMessages.has(msg.id)) return;
   renderedMessages.add(msg.id);
-  messageCache[msg.id] = msg; // cache the message
+  messageCache[msg.id] = msg;
 
   const div = document.createElement('div');
   div.classList.add('chat-message');
@@ -128,10 +125,10 @@ function renderMessage(msg) {
     timeZone: 'Europe/London'
   });
 
-  // Show reply header if this message is a reply
+  // Look up reply content from cache if exists
   let replyText = '';
-  if (msg.reply_to_id && msg.reply_to_content) {
-    replyText = `<div class="replying-to">Replying to: "${msg.reply_to_content}"</div>`;
+  if (msg.reply_to_id && messageCache[msg.reply_to_id]) {
+    replyText = `<div class="replying-to">Replying to: "${messageCache[msg.reply_to_id].content}"</div>`;
   }
 
   div.innerHTML = `
@@ -144,13 +141,11 @@ function renderMessage(msg) {
   chatContainer.appendChild(div);
   chatContainer.scrollTop = chatContainer.scrollHeight;
 
-  // Reply button
   const replyBtn = div.querySelector('.reply-button');
   replyBtn.addEventListener('click', async () => {
     const replyTextInput = prompt(`Reply to ${msg.full_name || msg.user_id}:`);
     if (!replyTextInput) return;
 
-    // Insert reply as a new message with reply_to_id
     const { data: inserted, error } = await supabase.from('messages').insert([{
       user_id: user.id,
       full_name: fullName,
@@ -160,31 +155,25 @@ function renderMessage(msg) {
 
     if (error) return console.error("Reply insert failed:", error);
 
-    // Add reply_to_content so it displays correctly
-    inserted.reply_to_content = msg.content;
-    renderMessage(inserted);
+    renderMessage(inserted); // will pick up the original content from messageCache
   });
 }
 
-// Load all messages on page load
+// Load all messages
 async function loadMessages() {
   const { data, error } = await supabase
     .from('messages')
-    .select(`
-      *,
-      reply_to:messages(id, content)
-    `)
+    .select('*')
     .order('created_at', { ascending: true });
 
   if (error) return console.error("Error loading messages:", error);
 
   data.forEach(msg => {
-    // Attach reply_to content if it exists
-    if (msg.reply_to && msg.reply_to.length > 0) {
-      msg.reply_to_content = msg.reply_to[0].content;
-    }
-    renderMessage(msg);
+    messageCache[msg.id] = msg; // populate cache first
   });
+
+  // Now render each message
+  data.forEach(renderMessage);
 }
 
 loadMessages();
@@ -193,9 +182,6 @@ loadMessages();
 const chatChannel = supabase.channel('public:messages')
   .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
     const msg = payload.new;
-    if (msg.reply_to_id && messageCache[msg.reply_to_id]) {
-      msg.reply_to_content = messageCache[msg.reply_to_id].content;
-    }
     renderMessage(msg);
   })
   .subscribe();
@@ -325,6 +311,7 @@ chatForm.addEventListener('submit', async e => {
   </script>
 </body>
 </html>
+
 
 
 
