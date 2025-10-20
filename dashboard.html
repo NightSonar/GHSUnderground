@@ -117,9 +117,11 @@ function renderMessage(msg) {
     hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London'
   })
 
-  // Show reply header if this message is a reply
+  // Build message content
   let innerHTML = ''
-  if (msg.reply_to && msg.reply_to.content) {
+
+  // Show reply header if this message is a reply
+  if (msg.reply_to?.content) {
     innerHTML += `<div class="replying-to">Replying to: "${msg.reply_to.content}"</div>`
   }
 
@@ -143,21 +145,23 @@ function renderMessage(msg) {
       content: replyText,
       reply_to_id: msg.id
     }])
-    if (error) console.error("Reply insert failed:", error)
+    if (error) return console.error("Reply insert failed:", error)
   })
 }
 
-// Load messages including their parent (if any)
+// Load messages with replies
 async function loadMessages() {
   const { data, error } = await supabase
     .from('messages')
     .select(`
       *,
-      reply_to:messages(id, content, full_name)
+      reply_to:messages!messages_reply_to_id_fkey(id, content, full_name)
     `)
     .order('created_at', { ascending: true })
-  if (error) console.error("Error loading messages:", error)
-  else data.forEach(renderMessage)
+
+  if (error) return console.error("Error loading messages:", error)
+
+  data.forEach(msg => renderMessage(msg))
 }
 loadMessages()
 
@@ -172,11 +176,14 @@ chatForm.addEventListener('submit', async e => {
   const content = chatInput.value.trim()
   if (!content) return
 
-  const { error } = await supabase.from('messages').insert([{ user_id: user.id, full_name: fullName, content }])
+  const { error } = await supabase.from('messages').insert([{
+    user_id: user.id,
+    full_name: fullName,
+    content
+  }])
   if (error) console.error("Insert failed:", error)
   chatInput.value = ''
 })
-
 
 
     // ======================
@@ -285,6 +292,7 @@ chatForm.addEventListener('submit', async e => {
   </script>
 </body>
 </html>
+
 
 
 
