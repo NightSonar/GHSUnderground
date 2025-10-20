@@ -223,13 +223,17 @@ footer {
   transform: scale(0.95);     /* pressed effect */
 }
 
-.chat-reply-to {
-  font-size: 0.75em;
-  color: #7fffbf; /* lighter green */
-  margin-bottom: 2px;
-  padding-left: 8px;
-  border-left: 2px solid #00ff99;
+/* ------------------ Reply Message Styling ------------------ */
+.replying-to {
+  background: rgba(0, 255, 153, 0.1); /* subtle green tint */
+  border-left: 3px solid #00ff99;      /* neon green line for visibility */
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  font-size: 0.9em;
   font-style: italic;
+  color: #7fffbf;
+  border-radius: 4px;
 }
+
 
 
