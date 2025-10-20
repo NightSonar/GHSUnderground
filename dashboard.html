@@ -61,8 +61,31 @@ That's not my dashboard, this is:
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
     // --- AUTH ---
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) window.location.href = 'index.html'
+  // --- AUTH SAFE LOAD ---
+  let user = null
+
+  try {
+    // Wait for current session
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+    if (sessionError) console.warn("Session load error:", sessionError)
+  
+    user = sessionData?.session?.user
+  
+    // If still no user, try getUser as fallback
+    if (!user) {
+      const { data: userData } = await supabase.auth.getUser()
+      user = userData?.user
+    }
+  
+    if (!user) {
+      // Redirect to index after tiny delay so console can catch logs
+      setTimeout(() => window.location.href = 'index.html', 50)
+    }
+  } catch (err) {
+    console.error("Auth check failed:", err)
+    setTimeout(() => window.location.href = 'index.html', 50)
+  }
+
 
     // --- FETCH PROFILE NAME ---
     let fullName = null
@@ -273,3 +296,4 @@ That's not my dashboard, this is:
   </script>
 </body>
 </html>
+
