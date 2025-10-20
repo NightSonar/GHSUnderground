@@ -103,40 +103,56 @@
     // ======================
     // CHATROOM
     // ======================
-const chatContainer = document.getElementById('chat-container')
-const chatForm = document.getElementById('chat-form')
-const chatInput = document.getElementById('chat-input')
+const chatContainer = document.getElementById('chat-container');
+const chatForm = document.getElementById('chat-form');
+const chatInput = document.getElementById('chat-input');
+
+// Clear and render all messages
+async function loadMessages() {
+  chatContainer.innerHTML = ''; // clear container
+
+  const { data, error } = await supabase
+    .from('messages')
+    .select(`
+      *,
+      reply_to:messages!messages_reply_to_id_fkey(id, content, full_name)
+    `)
+    .order('created_at', { ascending: true });
+
+  if (error) console.error("Error loading messages:", error);
+  else data.forEach(renderMessage);
+}
 
 // Render a single message
 function renderMessage(msg) {
-  const div = document.createElement('div')
-  div.classList.add('chat-message')
-  if (msg.user_id === user.id) div.classList.add('current-user')
+  const div = document.createElement('div');
+  div.classList.add('chat-message');
+  if (msg.user_id === user.id) div.classList.add('current-user');
 
   const time = new Date(msg.created_at + 'Z').toLocaleTimeString('en-GB', {
-    hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London'
-  })
-
-  // Build message content
-  let innerHTML = ''
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Europe/London'
+  });
 
   // Show reply header if this message is a reply
+  let innerHTML = '';
   if (msg.reply_to?.content) {
-    innerHTML += `<div class="replying-to">Replying to: "${msg.reply_to.content}"</div>`
+    innerHTML += `<div class="replying-to">Replying to: "${msg.reply_to.content}"</div>`;
   }
 
-  innerHTML += `<span class="user">${msg.full_name || msg.user_id}:</span> ${msg.content} <span class="time">${time}</span>`
-  innerHTML += `<button class="reply-button" data-id="${msg.id}">Reply</button>`
+  innerHTML += `<span class="user">${msg.full_name || msg.user_id}:</span> ${msg.content} <span class="time">${time}</span>`;
+  innerHTML += `<button class="reply-button" data-id="${msg.id}">Reply</button>`;
 
-  div.innerHTML = innerHTML
-  chatContainer.appendChild(div)
-  chatContainer.scrollTop = chatContainer.scrollHeight
+  div.innerHTML = innerHTML;
+  chatContainer.appendChild(div);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
 
   // Reply button
-  const replyBtn = div.querySelector('.reply-button')
+  const replyBtn = div.querySelector('.reply-button');
   replyBtn.addEventListener('click', async () => {
-    const replyText = prompt(`Reply to ${msg.full_name || msg.user_id}:`)
-    if (!replyText) return
+    const replyText = prompt(`Reply to ${msg.full_name || msg.user_id}:`);
+    if (!replyText) return;
 
     // Insert reply as a new message with reply_to_id
     const { error } = await supabase.from('messages').insert([{
@@ -144,46 +160,36 @@ function renderMessage(msg) {
       full_name: fullName,
       content: replyText,
       reply_to_id: msg.id
-    }])
-    if (error) return console.error("Reply insert failed:", error)
-  })
+    }]);
+
+    if (error) console.error("Reply insert failed:", error);
+  });
 }
 
-// Load messages with replies
-async function loadMessages() {
-  const { data, error } = await supabase
-    .from('messages')
-    .select(`
-      *,
-      reply_to:messages!messages_reply_to_id_fkey(id, content, full_name)
-    `)
-    .order('created_at', { ascending: true })
-
-  if (error) return console.error("Error loading messages:", error)
-
-  data.forEach(msg => renderMessage(msg))
-}
-loadMessages()
-
-// Real-time messages
+// Real-time listener
 const chatChannel = supabase.channel('public:messages')
-  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => renderMessage(payload.new))
-  .subscribe()
+  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+    renderMessage(payload.new);
+  })
+  .subscribe();
 
-// Send a normal message
+// Send normal message
 chatForm.addEventListener('submit', async e => {
-  e.preventDefault()
-  const content = chatInput.value.trim()
-  if (!content) return
+  e.preventDefault();
+  const content = chatInput.value.trim();
+  if (!content) return;
 
   const { error } = await supabase.from('messages').insert([{
     user_id: user.id,
     full_name: fullName,
     content
-  }])
-  if (error) console.error("Insert failed:", error)
-  chatInput.value = ''
-})
+  }]);
+  if (error) console.error("Insert failed:", error);
+  chatInput.value = '';
+});
+
+// Initial load
+loadMessages();
 
 
     // ======================
@@ -292,6 +298,7 @@ chatForm.addEventListener('submit', async e => {
   </script>
 </body>
 </html>
+
 
 
 
