@@ -224,13 +224,22 @@ footer {
 }
 
 /* ------------------ Reply Message Styling ------------------ */
+/* --- Fix mobile scaling for reply text --- */
+html {
+  -webkit-text-size-adjust: 100%; /* stop mobile zooming text */
+}
+
 .replying-to {
+  font-size: 0.85rem !important; /* fixed relative to root, not parent */
+  line-height: 1.2;
   font-style: italic;
   color: #aaffaa;
   margin-bottom: 4px;
   border-left: 3px solid #00ff99;
   padding-left: 6px;
+  opacity: 0.85;
 }
+
 
 
 
