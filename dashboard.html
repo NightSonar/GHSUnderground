@@ -107,26 +107,11 @@ const chatContainer = document.getElementById('chat-container');
 const chatForm = document.getElementById('chat-form');
 const chatInput = document.getElementById('chat-input');
 
-// Clear and render all messages
-async function loadMessages() {
-  chatContainer.innerHTML = ''; // clear container
-
-  const { data, error } = await supabase
-    .from('messages')
-    .select(`
-      *,
-      reply_to:messages!messages_reply_to_id_fkey(id, content, full_name)
-    `)
-    .order('created_at', { ascending: true });
-
-  if (error) console.error("Error loading messages:", error);
-  else data.forEach(renderMessage);
-}
-
 // Render a single message
 function renderMessage(msg) {
   const div = document.createElement('div');
   div.classList.add('chat-message');
+
   if (msg.user_id === user.id) div.classList.add('current-user');
 
   const time = new Date(msg.created_at + 'Z').toLocaleTimeString('en-GB', {
@@ -135,35 +120,27 @@ function renderMessage(msg) {
     timeZone: 'Europe/London'
   });
 
-  // Show reply header if this message is a reply
-  let innerHTML = '';
-  if (msg.reply_to?.content) {
-    innerHTML += `<div class="replying-to">Replying to: "${msg.reply_to.content}"</div>`;
-  }
+  div.innerHTML = `<span class="user">${msg.full_name || msg.user_id}:</span> ${msg.content} <span class="time">${time}</span>`;
 
-  innerHTML += `<span class="user">${msg.full_name || msg.user_id}:</span> ${msg.content} <span class="time">${time}</span>`;
-  innerHTML += `<button class="reply-button" data-id="${msg.id}">Reply</button>`;
-
-  div.innerHTML = innerHTML;
   chatContainer.appendChild(div);
   chatContainer.scrollTop = chatContainer.scrollHeight;
+}
 
-  // Reply button
-  const replyBtn = div.querySelector('.reply-button');
-  replyBtn.addEventListener('click', async () => {
-    const replyText = prompt(`Reply to ${msg.full_name || msg.user_id}:`);
-    if (!replyText) return;
+// Load all messages from the table
+async function loadMessages() {
+  chatContainer.innerHTML = ''; // clear container
 
-    // Insert reply as a new message with reply_to_id
-    const { error } = await supabase.from('messages').insert([{
-      user_id: user.id,
-      full_name: fullName,
-      content: replyText,
-      reply_to_id: msg.id
-    }]);
+  const { data, error } = await supabase
+    .from('messages')
+    .select('*')
+    .order('created_at', { ascending: true });
 
-    if (error) console.error("Reply insert failed:", error);
-  });
+  if (error) {
+    console.error("Error loading messages:", error);
+    return;
+  }
+
+  data.forEach(renderMessage);
 }
 
 // Real-time listener
@@ -173,7 +150,7 @@ const chatChannel = supabase.channel('public:messages')
   })
   .subscribe();
 
-// Send normal message
+// Send a new message
 chatForm.addEventListener('submit', async e => {
   e.preventDefault();
   const content = chatInput.value.trim();
@@ -184,6 +161,7 @@ chatForm.addEventListener('submit', async e => {
     full_name: fullName,
     content
   }]);
+
   if (error) console.error("Insert failed:", error);
   chatInput.value = '';
 });
@@ -298,6 +276,7 @@ loadMessages();
   </script>
 </body>
 </html>
+
 
 
 
