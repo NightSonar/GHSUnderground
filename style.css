@@ -222,3 +222,15 @@ footer {
 .upvote-button:active {
   transform: scale(0.95);     /* pressed effect */
 }
+
+/* ------------------ Chat Reply ------------------ */
+.chat-reply {
+  background: #001100;       /* very dark green/black for reply bubble */
+  border-left: 3px solid #00ff99; /* bright green indicator */
+  padding: 4px 10px;
+  margin-bottom: 4px;
+  border-radius: 6px;
+  font-size: 0.85em;
+  color: #aaffaa;            /* lighter green text for replies */
+  word-wrap: break-word;
+}
