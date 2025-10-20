@@ -1,5 +1,3 @@
-That's not my dashboard, this is:
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -61,31 +59,24 @@ That's not my dashboard, this is:
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
     // --- AUTH ---
-  // --- AUTH SAFE LOAD ---
-  let user = null
+    let user = null
 
-  try {
-    // Wait for current session
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
-    if (sessionError) console.warn("Session load error:", sessionError)
-  
-    user = sessionData?.session?.user
-  
-    // If still no user, try getUser as fallback
-    if (!user) {
-      const { data: userData } = await supabase.auth.getUser()
-      user = userData?.user
-    }
-  
-    if (!user) {
-      // Redirect to index after tiny delay so console can catch logs
+    try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+      if (sessionError) console.warn("Session load error:", sessionError)
+    
+      user = sessionData?.session?.user
+    
+      if (!user) {
+        const { data: userData } = await supabase.auth.getUser()
+        user = userData?.user
+      }
+    
+      if (!user) setTimeout(() => window.location.href = 'index.html', 50)
+    } catch (err) {
+      console.error("Auth check failed:", err)
       setTimeout(() => window.location.href = 'index.html', 50)
     }
-  } catch (err) {
-    console.error("Auth check failed:", err)
-    setTimeout(() => window.location.href = 'index.html', 50)
-  }
-
 
     // --- FETCH PROFILE NAME ---
     let fullName = null
@@ -125,55 +116,42 @@ That's not my dashboard, this is:
         hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London'
       })
 
-      div.innerHTML = `
-        <span class="user">${msg.full_name || msg.user_id}:</span> 
-        ${msg.content} 
-        <span class="time">${time}</span>
-        <div class="chat-replies" id="replies-${msg.id}"></div>
-        <button class="reply-button" data-id="${msg.id}">Reply</button>
-      `
+      // Build message content
+      let innerHTML = ''
+      if (msg.reply_to && msg.reply_to.content) {
+        innerHTML += `<div class="replying-to">Replying to: "${msg.reply_to.content}"</div>`
+      }
+      innerHTML += `<span class="user">${msg.full_name || msg.user_id}:</span> ${msg.content} <span class="time">${time}</span>`
+      innerHTML += `<button class="reply-button" data-id="${msg.id}">Reply</button>`
 
+      div.innerHTML = innerHTML
       chatContainer.appendChild(div)
       chatContainer.scrollTop = chatContainer.scrollHeight
 
-      // Load replies if exist
-      if (msg.replies) {
-        const repliesContainer = div.querySelector(`#replies-${msg.id}`)
-        msg.replies.forEach(r => {
-          const rDiv = document.createElement('div')
-          rDiv.classList.add('chat-reply')
-          rDiv.innerHTML = `<span class="reply-user">${r.full_name || r.user_id}:</span> ${r.content}`
-          repliesContainer.appendChild(rDiv)
-        })
-      }
-
-      // Reply button listener
       const replyBtn = div.querySelector('.reply-button')
       replyBtn.addEventListener('click', async () => {
         const replyText = prompt(`Reply to ${msg.full_name || msg.user_id}:`)
         if (!replyText) return
-
-        const { error } = await supabase.from('message_replies').insert([{
-          message_id: msg.id,
+        const { error } = await supabase.from('messages').insert([{
           user_id: user.id,
           full_name: fullName,
-          content: replyText
+          content: replyText,
+          reply_to_id: msg.id
         }])
         if (error) console.error("Reply insert failed:", error)
       })
     }
 
     async function loadMessages() {
-      // fetch messages with replies
       const { data, error } = await supabase
         .from('messages')
-        .select(`*, message_replies(*)`)
+        .select(`
+          *,
+          reply_to:messages(id, content, full_name)
+        `)
         .order('created_at', { ascending: true })
       if (error) console.error("Error loading messages:", error)
-      else data.forEach(msg => {
-        msg.replies = msg.message_replies
-        renderMessage(msg)
-      })
+      else data.forEach(renderMessage)
     }
     loadMessages()
 
@@ -296,4 +274,3 @@ That's not my dashboard, this is:
   </script>
 </body>
 </html>
-
