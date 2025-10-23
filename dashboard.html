@@ -102,7 +102,7 @@
     })
 
     // ======================
-    // CHATROOM
+// CHATROOM
 const chatContainer = document.getElementById('chat-container');
 const chatForm = document.getElementById('chat-form');
 const chatInput = document.getElementById('chat-input');
@@ -118,8 +118,12 @@ try {
   console.error('RPC call failed:', err);
 }
 
-// Render a single message
+// --- Render a single message ---
 function renderMessage(msg) {
+  // Skip messages older than 48 hours
+  const cutoff = new Date(Date.now() - 48*60*60*1000);
+  if (new Date(msg.created_at) < cutoff) return;
+
   if (renderedMessages.has(msg.id)) return;
   renderedMessages.add(msg.id);
   messageCache[msg.id] = msg;
@@ -134,7 +138,6 @@ function renderMessage(msg) {
     timeZone: 'Europe/London'
   });
 
-  // Look up reply content from cache if exists
   let replyText = '';
   if (msg.reply_to_id && messageCache[msg.reply_to_id]) {
     replyText = `<div class="replying-to">Replying to: "${messageCache[msg.reply_to_id].content}"</div>`;
@@ -168,34 +171,41 @@ function renderMessage(msg) {
   });
 }
 
-// Load all messages
+// --- Load all recent messages ---
 async function loadMessages() {
+  const cutoffISO = new Date(Date.now() - 48*60*60*1000).toISOString(); // 48h ago
   const { data, error } = await supabase
     .from('messages')
     .select('*')
+    .gt('created_at', cutoffISO) // only last 48h
     .order('created_at', { ascending: true });
 
   if (error) return console.error("Error loading messages:", error);
 
-  data.forEach(msg => messageCache[msg.id] = msg); // populate cache
+  data.forEach(msg => messageCache[msg.id] = msg); // cache first
   data.forEach(renderMessage);
 }
 
 loadMessages();
 
-// Real-time messages with auto-delete check
+// --- Real-time messages with auto-delete check ---
 const chatChannel = supabase.channel('public:messages')
   .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, async payload => {
     try {
-      await supabase.rpc('delete_old_messages'); // keep chat clean
+      await supabase.rpc('delete_old_messages'); // clean up DB
     } catch (err) {
       console.error('RPC call failed:', err);
     }
-    renderMessage(payload.new);
+
+    // Only render if within last 48 hours
+    const cutoff = new Date(Date.now() - 48*60*60*1000);
+    if (new Date(payload.new.created_at) > cutoff) {
+      renderMessage(payload.new);
+    }
   })
   .subscribe();
 
-// Send a normal message
+// --- Send a normal message ---
 chatForm.addEventListener('submit', async e => {
   e.preventDefault();
   const content = chatInput.value.trim();
@@ -212,7 +222,6 @@ chatForm.addEventListener('submit', async e => {
   renderMessage(inserted);
   chatInput.value = '';
 });
-
 
 
     // ======================
@@ -321,6 +330,7 @@ chatForm.addEventListener('submit', async e => {
   </script>
 </body>
 </html>
+
 
 
 
