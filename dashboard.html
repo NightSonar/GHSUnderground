@@ -110,6 +110,14 @@ const chatInput = document.getElementById('chat-input');
 const renderedMessages = new Set();
 const messageCache = {};
 
+// --- DELETE OLD MESSAGES BEFORE LOADING ---
+try {
+  const { error: deleteError } = await supabase.rpc('delete_old_messages');
+  if (deleteError) console.error('Failed to delete old messages:', deleteError);
+} catch (err) {
+  console.error('RPC call failed:', err);
+}
+
 // Render a single message
 function renderMessage(msg) {
   if (renderedMessages.has(msg.id)) return;
@@ -156,7 +164,7 @@ function renderMessage(msg) {
 
     if (error) return console.error("Reply insert failed:", error);
 
-    renderMessage(inserted); // will pick up the original content from messageCache
+    renderMessage(inserted);
   });
 }
 
@@ -169,21 +177,21 @@ async function loadMessages() {
 
   if (error) return console.error("Error loading messages:", error);
 
-  data.forEach(msg => {
-    messageCache[msg.id] = msg; // populate cache first
-  });
-
-  // Now render each message
+  data.forEach(msg => messageCache[msg.id] = msg); // populate cache
   data.forEach(renderMessage);
 }
 
 loadMessages();
 
-// Real-time messages
+// Real-time messages with auto-delete check
 const chatChannel = supabase.channel('public:messages')
-  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-    const msg = payload.new;
-    renderMessage(msg);
+  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, async payload => {
+    try {
+      await supabase.rpc('delete_old_messages'); // keep chat clean
+    } catch (err) {
+      console.error('RPC call failed:', err);
+    }
+    renderMessage(payload.new);
   })
   .subscribe();
 
@@ -204,6 +212,7 @@ chatForm.addEventListener('submit', async e => {
   renderMessage(inserted);
   chatInput.value = '';
 });
+
 
 
     // ======================
@@ -312,6 +321,7 @@ chatForm.addEventListener('submit', async e => {
   </script>
 </body>
 </html>
+
 
 
 
