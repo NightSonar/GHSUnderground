@@ -25,12 +25,12 @@ if (signupForm) {
       return
     }
 
-    // Sign up user with redirect URL for email verification
+    // Sign up user with correct redirect URL
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: 'https://nightsonar.github.io/#/auth/callback'
+        emailRedirectTo: 'https://nightsonar.github.io/GHSUnderground/#/auth/callback'
       }
     })
 
@@ -43,7 +43,7 @@ if (signupForm) {
     try {
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert([{ user_id: data.user.id, full_name: fullName, email }])
+        .insert([{ user_id: data.user?.id, full_name: fullName, email }])
       if (profileError) console.error("Error saving profile:", profileError)
     } catch (err) {
       console.error("Error inserting profile:", err)
@@ -72,10 +72,17 @@ if (loginForm) {
 }
 
 // --- Handle email verification callback ---
-supabase.auth.onAuthStateChange(async (event, session) => {
-  if (event === 'SIGNED_IN') {
-    console.log('User signed in via email verification.')
-    window.location.href = 'dashboard.html'
+document.addEventListener('DOMContentLoaded', async () => {
+  const hash = window.location.hash
+  if (hash.includes('access_token')) {
+    try {
+      const { data, error } = await supabase.auth.exchangeCodeForSession(hash)
+      if (error) throw error
+      console.log('Email verified! User signed in:', data.user)
+      window.location.href = 'dashboard.html'
+    } catch (err) {
+      console.error('Verification failed:', err.message)
+    }
   }
 })
 
