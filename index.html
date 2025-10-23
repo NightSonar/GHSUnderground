@@ -4,6 +4,26 @@
   <meta charset="UTF-8">
   <title>GHS Underground</title>
   <link rel="stylesheet" href="style.css">
+
+  <script>
+    // --- Supabase email verification redirect fix for GitHub Pages ---
+    (function() {
+      // If user is redirected with a Supabase hash (after email verification)
+      if (window.location.hash && window.location.pathname === "/GHSUnderground/") {
+        // Save the hash temporarily
+        sessionStorage.setItem("supabaseAuthRedirect", window.location.hash);
+        // Redirect to your callback route while preserving the token
+        window.location.href = "/GHSUnderground/#/auth/callback" + window.location.hash;
+      } else {
+        // If hash was lost, recover it
+        const saved = sessionStorage.getItem("supabaseAuthRedirect");
+        if (saved && window.location.hash === "") {
+          sessionStorage.removeItem("supabaseAuthRedirect");
+          window.location.hash = saved;
+        }
+      }
+    })();
+  </script>
 </head>
 <body>
   <h1>Welcome to GHS Underground</h1>
