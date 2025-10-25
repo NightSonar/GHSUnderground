@@ -240,25 +240,12 @@ html {
   opacity: 0.85;
 }
 
-/* Default username color */
-.username {
-  color: white;
-  font-weight: normal;
-}
-
-/* Gold username */
 .username.gold {
-  color: gold;
-  font-weight: 600;
-  text-shadow: 0 0 4px rgba(255, 215, 0, 0.6);
-  /* Optional shimmer/glow effect */
-  animation: shimmer 2s infinite linear;
+    color: gold;
+    font-weight: bold; /* optional: makes it stand out more */
+    text-shadow: 0 0 5px #FFD700; /* optional: glowing effect */
 }
 
-@keyframes shimmer {
-  0%, 100% { text-shadow: 0 0 4px rgba(255, 215, 0, 0.6); }
-  50% { text-shadow: 0 0 8px rgba(255, 215, 0, 1); }
-}
 
 
 
