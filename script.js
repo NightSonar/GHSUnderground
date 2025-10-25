@@ -93,6 +93,15 @@ const chatContainer = document.querySelector('#chat-container') // make sure you
 if (chatForm && chatInput && chatContainer) {
   const { data: { user } } = await supabase.auth.getUser()
 
+  // --- Function to highlight your name in gold ---
+  function highlightGoldNames() {
+    document.querySelectorAll('.username').forEach(el => {
+      if (el.textContent === 'Sparrow') { // replace with your exact full name
+        el.classList.add('gold')
+      }
+    })
+  }
+
   chatForm.addEventListener('submit', async e => {
     e.preventDefault()
     const content = chatInput.value.trim()
@@ -127,11 +136,6 @@ if (chatForm && chatInput && chatContainer) {
     usernameEl.classList.add('username')
     usernameEl.textContent = fullName
 
-    // Make your name gold using a CSS class
-    if (fullName === 'Sparrow') { // replace 'Sparrow' with your exact full name
-      usernameEl.classList.add('gold')
-    }
-
     const textEl = document.createElement('span')
     textEl.classList.add('message-text')
     textEl.textContent = `: ${content}`
@@ -140,8 +144,12 @@ if (chatForm && chatInput && chatContainer) {
     messageEl.appendChild(textEl)
     chatContainer.appendChild(messageEl)
     chatContainer.scrollTop = chatContainer.scrollHeight
+
+    // Highlight gold names after rendering
+    highlightGoldNames()
   })
+
+  // --- Highlight existing messages on page load (if any) ---
+  highlightGoldNames()
 }
-
-
 
