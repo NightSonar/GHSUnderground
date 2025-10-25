@@ -89,7 +89,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 // --- Chatroom message send function (dashboard only) ---
 const chatForm = document.querySelector('#chat-form')
 const chatInput = document.querySelector('#chat-input')
-if (chatForm && chatInput) {
+const chatContainer = document.querySelector('#chat-container') // make sure you have this container
+if (chatForm && chatInput && chatContainer) {
   const { data: { user } } = await supabase.auth.getUser()
 
   chatForm.addEventListener('submit', async e => {
@@ -117,6 +118,31 @@ if (chatForm && chatInput) {
     }])
     if (error) console.error("Insert failed:", error)
     chatInput.value = ''
+
+    // --- Render message immediately in chat ---
+    const messageEl = document.createElement('div')
+    messageEl.classList.add('chat-message')
+
+    const usernameEl = document.createElement('span')
+    usernameEl.classList.add('username')
+    usernameEl.textContent = fullName
+
+    // Make your name gold
+    if (fullName === 'Sparrow') { // replace 'Sparrow' with your exact full name if different
+      usernameEl.style.color = 'gold'
+      usernameEl.style.fontWeight = 'bold'
+      usernameEl.style.textShadow = '0 0 5px #FFD700'
+    }
+
+    const textEl = document.createElement('span')
+    textEl.classList.add('message-text')
+    textEl.textContent = `: ${content}`
+
+    messageEl.appendChild(usernameEl)
+    messageEl.appendChild(textEl)
+    chatContainer.appendChild(messageEl)
+    chatContainer.scrollTop = chatContainer.scrollHeight
   })
 }
+
 
