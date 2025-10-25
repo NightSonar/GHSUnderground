@@ -127,11 +127,9 @@ if (chatForm && chatInput && chatContainer) {
     usernameEl.classList.add('username')
     usernameEl.textContent = fullName
 
-    // Make your name gold
-    if (fullName === 'Sparrow') { // replace 'Sparrow' with your exact full name if different
-      usernameEl.style.color = 'gold'
-      usernameEl.style.fontWeight = 'bold'
-      usernameEl.style.textShadow = '0 0 5px #FFD700'
+    // Make your name gold using a CSS class
+    if (fullName === 'Sparrow') { // replace 'Sparrow' with your exact full name
+      usernameEl.classList.add('gold')
     }
 
     const textEl = document.createElement('span')
@@ -144,5 +142,6 @@ if (chatForm && chatInput && chatContainer) {
     chatContainer.scrollTop = chatContainer.scrollHeight
   })
 }
+
 
 
