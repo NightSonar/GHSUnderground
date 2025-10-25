@@ -240,11 +240,12 @@ html {
   opacity: 0.85;
 }
 
-.username.gold {
-    color: gold !important;      /* ensures it overrides other styles */
+#chat-container .chat-message .username.gold {
+    color: gold !important;      
     font-weight: bold;
     text-shadow: 0 0 5px #FFD700;
 }
+
 
 
 
