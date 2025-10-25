@@ -243,8 +243,9 @@ html {
 .username.gold {
     color: gold;
     font-weight: bold; /* optional: makes it stand out more */
-    text-shadow: 0 0 5px #FFD700; /* optional: glowing effect */
+    text-shadow: 0 0 5px #FFD700; /* glowing effect */
 }
+
 
 
 
