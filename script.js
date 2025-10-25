@@ -89,8 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // --- Chatroom message send function (dashboard only) ---
 const chatForm = document.querySelector('#chat-form')
 const chatInput = document.querySelector('#chat-input')
-const chatContainer = document.getElementById('chat-container')
-if (chatForm && chatInput && chatContainer) {
+if (chatForm && chatInput) {
   const { data: { user } } = await supabase.auth.getUser()
 
   chatForm.addEventListener('submit', async e => {
@@ -119,38 +118,5 @@ if (chatForm && chatInput && chatContainer) {
     if (error) console.error("Insert failed:", error)
     chatInput.value = ''
   })
-
-  // --- Function to render messages with gold name for you ---
-  async function fetchAndRenderMessages() {
-    const { data: messages, error } = await supabase
-      .from('messages')
-      .select('*')
-      .order('created_at', { ascending: true })
-    if (error) return console.error(error)
-
-    chatContainer.innerHTML = '' // Clear chat
-    messages.forEach(msg => renderMessage(msg, user.id))
-  }
-
-  function renderMessage(message, currentUserId) {
-    const container = document.createElement('div')
-    container.classList.add('message')
-
-    const usernameSpan = document.createElement('span')
-    usernameSpan.classList.add('username')
-    usernameSpan.textContent = message.full_name || message.email
-
-    // Gold username if the message is from you
-    if (message.user_id === currentUserId) {
-      usernameSpan.classList.add('gold')
-    }
-
-    container.appendChild(usernameSpan)
-    container.appendChild(document.createTextNode(`: ${message.content}`))
-    chatContainer.appendChild(container)
-  }
-
-  // Fetch messages initially and then poll every 2-3 seconds
-  fetchAndRenderMessages()
-  setInterval(fetchAndRenderMessages, 2500)
 }
+
